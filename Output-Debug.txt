@@ -1,0 +1,5 @@
+﻿Verbose logs are written to:
+C:\Users\dmi\AppData\Local\Temp\visualstudio-js-debugger.txt
+Microsoft.Hosting.Lifetime: Information: Application started. Press Ctrl+C to shut down.
+Microsoft.Hosting.Lifetime: Information: Hosting environment: Development
+Microsoft.Hosting.Lifetime: Information: Content root path: C:\Users\dmi\source\repos\BookStoreApplication\BookStoreApplication
