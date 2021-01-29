@@ -15,42 +15,36 @@ namespace BookStoreApi.Controllers {
     public class HomeController : ControllerBase {
         private readonly ILogger<HomeController> _Logger;
 
-        public HomeController(ILoggerFactory loggerFactory)
-        {
+        public HomeController(ILoggerFactory loggerFactory) {
             _Logger = loggerFactory.CreateLogger<HomeController>();
         }
 
         // GET: api/<ValuesController>
         [HttpGet]
-        public IEnumerable<string> Get()
-        {
+        public IEnumerable<string> Get() {
             _Logger.LogTrace("Entering the Get-list method");
             return new string[] { "value1", "value2" };
         }
 
         // GET api/<ValuesController>/5
         [HttpGet("{id}")]
-        public string Get(int id)
-        {
+        public string Get(int id) {
             return "value";
         }
 
         // POST api/<ValuesController>
         [HttpPost]
-        public void Post([FromBody] string value)
-        {
+        public void Post([FromBody] string value) {
         }
 
         // PUT api/<ValuesController>/5
         [HttpPut("{id}")]
-        public void Put(int id, [FromBody] string value)
-        {
+        public void Put(int id, [FromBody] string value) {
         }
 
         // DELETE api/<ValuesController>/5
         [HttpDelete("{id}")]
-        public void Delete(int id)
-        {
+        public void Delete(int id) {
         }
     }
 }

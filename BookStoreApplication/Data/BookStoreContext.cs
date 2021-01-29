@@ -8,16 +8,13 @@ using Microsoft.EntityFrameworkCore.Metadata;
 // If you have enabled NRTs for your project, then un-comment the following line:
 // #nullable disable
 
-namespace BookStoreApi.Data
-{
+namespace BookStoreApi.Data {
     public partial class BookStoreContext : IdentityDbContext<IdentityUser, IdentityRole, string> {
-        public BookStoreContext()
-        {
+        public BookStoreContext() {
         }
 
         public BookStoreContext(DbContextOptions<BookStoreContext> options)
-            : base(options)
-        {
+            : base(options) {
         }
 
         public virtual DbSet<Author> Authors { get; set; }
@@ -25,11 +22,9 @@ namespace BookStoreApi.Data
 
 
 
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
-        {
+        protected override void OnModelCreating(ModelBuilder modelBuilder) {
             base.OnModelCreating(modelBuilder);
-            modelBuilder.Entity<Author>(entity =>
-            {
+            modelBuilder.Entity<Author>(entity => {
                 entity.Property(e => e.Firstname).HasMaxLength(50);
 
                 entity.Property(e => e.Lastname).HasMaxLength(50);
@@ -37,8 +32,7 @@ namespace BookStoreApi.Data
                 entity.HasMany<Book>(b => b.Books).WithMany(a => a.Authors);
             });
 
-            modelBuilder.Entity<Book>(entity =>
-            {
+            modelBuilder.Entity<Book>(entity => {
                 entity.Property(e => e.Image).HasMaxLength(150);
 
                 entity.Property(e => e.Isbn)

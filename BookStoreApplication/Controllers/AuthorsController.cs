@@ -25,8 +25,7 @@ namespace BookStoreApi.Controllers {
 
         public AuthorsController(ILogger<AuthorsController> logger,
             IBookStoreUnitOfWorkAsync bookStore,
-            IMapper mapper)
-        {
+            IMapper mapper) {
             _Logger = logger;
             _BookStore = bookStore;
             _Mapper = mapper;
@@ -41,10 +40,8 @@ namespace BookStoreApi.Controllers {
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetAuthors()
-        {
-            try
-            {
+        public async Task<IActionResult> GetAuthors() {
+            try {
                 _Logger.LogTrace("Getting authors");
                 var authors = await _BookStore.Authors.WhereAsync(
                     order: x => x.OrderBy(au => au.Lastname).ThenBy(au => au.Firstname),
@@ -55,8 +52,7 @@ namespace BookStoreApi.Controllers {
                     return NotFound();
                 return Ok(authorsDTOs);
             }
-            catch (Exception e)
-            {
+            catch (Exception e) {
                 return InternalError(e, "Getting authors provoked internal server error");
             }
         }
@@ -71,15 +67,12 @@ namespace BookStoreApi.Controllers {
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetAuthor(int id)
-        {
-            try
-            {
+        public async Task<IActionResult> GetAuthor(int id) {
+            try {
                 _Logger.LogTrace($"Attempting to get author with id={id}");
                 var author = await _BookStore.Authors.FindAsync(filter: au => au.Id == id,
                     includes: new Expression<Func<Author, object>>[] { x => x.Books });
-                if (author == null)
-                {
+                if (author == null) {
                     _Logger.LogWarning($"Failed to get author id={id}");
                     return NotFound();
                 }
@@ -87,14 +80,12 @@ namespace BookStoreApi.Controllers {
                 _Logger.LogTrace($"Returning author with id {id}");
                 return Ok(authorDTOs);
             }
-            catch (Exception e)
-            {
+            catch (Exception e) {
                 return InternalError(e, $"Getting author #{id} provoked internal server error");
             }
         }
 
-        private ObjectResult InternalError(Exception e, string message)
-        {
+        private ObjectResult InternalError(Exception e, string message) {
             _Logger.LogError(e, e.Message, Array.Empty<object>());
             return StatusCode(StatusCodes.Status500InternalServerError, message);
         }
@@ -108,18 +99,14 @@ namespace BookStoreApi.Controllers {
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> Create([FromBody] AuthorUpsertDTO author)
-        {
+        public async Task<IActionResult> Create([FromBody] AuthorUpsertDTO author) {
             _Logger.LogInformation($"Author submition");
-            try
-            {
-                if (author == null)
-                {
+            try {
+                if (author == null) {
                     _Logger.LogWarning($"Empty request was submited");
                     return StatusCode(StatusCodes.Status400BadRequest);
                 }
-                if (!ModelState.IsValid)
-                {
+                if (!ModelState.IsValid) {
                     _Logger.LogWarning(
                         $"Attempting to submit invalid data: {ModelState.Values.SelectMany(x => x.Errors).Select(e => e.ErrorMessage).Aggregate((fm, lm) => fm + '\n' + lm)}");
                     return BadRequest(ModelState);
@@ -132,37 +119,39 @@ namespace BookStoreApi.Controllers {
                 Author writer = _Mapper.Map<Author>(author);
                 var isSucceed = await _BookStore.Authors.CreateAsync(writer);
                 isSucceed &= await _BookStore.SaveData();
-                if (!isSucceed)
-                {
+                if (!isSucceed) {
                     _Logger.LogError("No records was inserted to database when creating the author");
                     return StatusCode(StatusCodes.Status500InternalServerError, "Failed to save author");
                 }
-                else
-                {
+                else {
                     _Logger.LogInformation("Author creates successfully");
                     return Created("Create", writer);
                 }
 
             }
-            catch (Exception e)
-            {
+            catch (Exception e) {
                 return InternalError(e, $"Unable to create author {author.Firstname} {author.Lastname}");
             }
         }
 
-        [HttpPut()]
-        public async Task<IActionResult> Update([FromBody] AuthorUpsertDTO author)
-        {
-            try
-            {
+        /// <summary>
+        /// Updates author data in the database
+        /// </summary>
+        /// <param name="author">Author </param>
+        /// <returns></returns>
+        [HttpPut]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> Update([FromBody] AuthorUpsertDTO author) {
+            try {
                 int authorId = author.Id;
                 _Logger.LogTrace($"Author {authorId} attempt");
-                if (author == null)
-                {
+                if (author == null) {
                     _Logger.LogTrace($"Author {authorId} attempt");
                     return StatusCode(StatusCodes.Status400BadRequest, "Empty objecy is not allowed");
                 }
-                if(!ModelState.IsValid)
+                if (!ModelState.IsValid)
                     return StatusCode(StatusCodes.Status400BadRequest, ModelState);
                 var authorToUpdate = await _BookStore.Authors.FindAsync(x => x.Id == authorId);
                 if (authorToUpdate == null)
@@ -176,8 +165,7 @@ namespace BookStoreApi.Controllers {
                     return StatusCode(StatusCodes.Status500InternalServerError, "Unexpected error while updating the author");
 
             }
-            catch (Exception e)
-            {
+            catch (Exception e) {
                 return InternalError(e, "Unexpected error while updating the author");
             }
         }
@@ -186,12 +174,10 @@ namespace BookStoreApi.Controllers {
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> Delete(int id)
-        {
-            try
-            {
+        public async Task<IActionResult> Delete(int id) {
+            try {
                 var author = await _BookStore.Authors.FindAsync(x => x.Id == id);
-                if(author == null)
+                if (author == null)
                     return StatusCode(StatusCodes.Status404NotFound, "Author not found");
                 bool succeed = await _BookStore.Authors.DeleteAsync(author);
                 succeed &= await _BookStore.SaveData();
@@ -200,8 +186,7 @@ namespace BookStoreApi.Controllers {
                 else
                     return StatusCode(StatusCodes.Status500InternalServerError, "Unable to remove ");
             }
-            catch(Exception e)
-            {
+            catch (Exception e) {
                 return InternalError(e, "Cant delete author");
             }
         }

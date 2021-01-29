@@ -6,13 +6,13 @@ using System.Threading.Tasks;
 
 namespace BookStoreApi.Data.DTOs {
     public class AuthorDTO {
-        
+
         /// <summary>
         /// Author id
         /// </summary>
-        [Display(Name ="Unique identity", Description = "Artificial and application specific number which identifiing")]
+        [Display(Name = "Unique identity", Description = "Artificial and application specific number which identifiing")]
         public int Id { get; set; }
-        
+
         [Display(Name = "First name", Description = "Author first name")]
         [MaxLength(50)]
         public string Firstname { get; set; }
@@ -42,7 +42,7 @@ namespace BookStoreApi.Data.DTOs {
         [MaxLength(50)]
         [Required]
         public string Firstname { get; set; }
-        
+
         /// <summary>
         /// Last name of the author
         /// </summary>

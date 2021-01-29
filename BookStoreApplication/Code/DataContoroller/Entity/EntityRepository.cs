@@ -9,87 +9,70 @@ using System.Threading.Tasks;
 namespace BookStoreApi.Code.DataContoroller.Entity {
     public class EntityRepositoryAsync<TEntity> : IRepositoryAsync<TEntity> where TEntity : class {
 
-        public EntityRepositoryAsync(DbSet<TEntity> entities, Expression<Func<TEntity, IComparable>> keyTaker)
-        {
+        public EntityRepositoryAsync(DbSet<TEntity> entities, Expression<Func<TEntity, IComparable>> keyTaker) {
             _ObjectSet = entities;
         }
 
         private readonly DbSet<TEntity> _ObjectSet;
 
-        public async Task<bool> CreateAsync(TEntity entity)
-        {
+        public async Task<bool> CreateAsync(TEntity entity) {
             bool result = false;
-            try
-            {
+            try {
                 await _ObjectSet.AddAsync(entity);
                 result = true;
             }
-            catch
-            {
+            catch {
                 throw;
             }
-            finally
-            {
+            finally {
 
             }
             return result;
         }
 
-        public async Task<bool> DeleteAsync(TEntity entity)
-        {
+        public async Task<bool> DeleteAsync(TEntity entity) {
             bool result = false;
-            try
-            {
+            try {
                 _ObjectSet.Remove(entity);
                 result = await Task.FromResult(true);
             }
-            catch (Exception)
-            {
+            catch (Exception) {
                 throw;
             }
             return result;
         }
 
-        public async Task<TEntity> FindAsync(Expression<Func<TEntity, bool>> filter, IEnumerable<Expression<Func<TEntity, object>>> includes = null)
-        {
+        public async Task<TEntity> FindAsync(Expression<Func<TEntity, bool>> filter, IEnumerable<Expression<Func<TEntity, object>>> includes = null) {
             IQueryable<TEntity> query = _ObjectSet;
-            if (includes != null)
-            {
+            if (includes != null) {
                 foreach (var include in includes)
                     query = query.Include(include);
             }
             return await query.FirstOrDefaultAsync(filter);
         }
 
-        public async Task<bool> UpdateAsync(TEntity entity)
-        {
+        public async Task<bool> UpdateAsync(TEntity entity) {
             bool result = false;
-            try
-            {
+            try {
                 _ObjectSet.Update(entity);
                 result = await Task.FromResult(true);
             }
-            catch (Exception)
-            {
+            catch (Exception) {
                 throw;
             }
 
-            finally
-            {
+            finally {
 
             }
             return result;
         }
 
-        public async Task<ICollection<TEntity>> WhereAsync(Expression<Func<TEntity, bool>> filter = null, Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>> order = null, IEnumerable<Expression<Func<TEntity, object>>> includes = null)
-        {
+        public async Task<ICollection<TEntity>> WhereAsync(Expression<Func<TEntity, bool>> filter = null, Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>> order = null, IEnumerable<Expression<Func<TEntity, object>>> includes = null) {
             IQueryable<TEntity> query = _ObjectSet;
-            if (filter != null)
-            {
+            if (filter != null) {
                 query = query.Where(filter);
             }
-            if (includes != null)
-            {
+            if (includes != null) {
                 foreach (var include in includes)
                     query = query.Include(include);
             }

@@ -13,26 +13,22 @@ namespace BookStoreApi.Code.DataContoroller.Entity {
 
 
 
-        public EntityBookStoreUoWAsync(BookStoreContext dbContext)
-        {
+        public EntityBookStoreUoWAsync(BookStoreContext dbContext) {
             _BookStoreContext = dbContext;
-            _Authors = new EntityRepositoryAsync<Author>(dbContext.Authors, a=>a.Id );
-            _Books = new EntityRepositoryAsync<Book>(dbContext.Books, b=>b.Id);
+            _Authors = new EntityRepositoryAsync<Author>(dbContext.Authors, a => a.Id);
+            _Books = new EntityRepositoryAsync<Book>(dbContext.Books, b => b.Id);
         }
 
-        public IRepositoryAsync<Author> Authors
-        {
+        public IRepositoryAsync<Author> Authors {
             get => _Authors;
         }
 
-        public IRepositoryAsync<Book> Books
-        {
+        public IRepositoryAsync<Book> Books {
             get => _Books;
         }
 
 
-        public async Task<bool> SaveData()
-        {
+        public async Task<bool> SaveData() {
             return await _BookStoreContext.SaveChangesAsync() > 0;
         }
 
@@ -40,14 +36,12 @@ namespace BookStoreApi.Code.DataContoroller.Entity {
         #region Disposing
 
         private bool _Disposed;
-        public void Dispose()
-        {
+        public void Dispose() {
             Dispose(true);
             GC.SuppressFinalize(this);
         }
 
-        protected void Dispose(bool disposing)
-        {
+        protected void Dispose(bool disposing) {
             if (_Disposed)
                 return;
             if (disposing)
