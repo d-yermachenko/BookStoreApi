@@ -21,7 +21,7 @@ namespace BookStoreApi.Data
         }
 
         public virtual DbSet<Author> Authors { get; set; }
-        public virtual DbSet<Books> Books { get; set; }
+        public virtual DbSet<Book> Books { get; set; }
 
 
 
@@ -33,9 +33,11 @@ namespace BookStoreApi.Data
                 entity.Property(e => e.Firstname).HasMaxLength(50);
 
                 entity.Property(e => e.Lastname).HasMaxLength(50);
+
+                entity.HasMany<Book>(b => b.Books).WithMany(a => a.Authors);
             });
 
-            modelBuilder.Entity<Books>(entity =>
+            modelBuilder.Entity<Book>(entity =>
             {
                 entity.Property(e => e.Image).HasMaxLength(150);
 
@@ -49,10 +51,7 @@ namespace BookStoreApi.Data
 
                 entity.Property(e => e.Title).HasMaxLength(100);
 
-                entity.HasOne(d => d.Author)
-                    .WithMany(p => p.Books)
-                    .HasForeignKey(d => d.AuthorId)
-                    .HasConstraintName("FK_Books_Authors");
+                entity.HasMany<Author>(b => b.Authors).WithMany(b => b.Books);
             });
 
             OnModelCreatingPartial(modelBuilder);

@@ -13,6 +13,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using System.Reflection;
+using AutoMapper;
+using BookStoreApi.Contracts;
+using BookStoreApi.Code.DataContoroller.Entity;
 
 namespace BookStoreApplication {
     public class Startup {
@@ -44,6 +47,9 @@ namespace BookStoreApplication {
                 setup.IncludeXmlComments(xFile, true);
             });
             services.AddControllers();
+            services.AddAutoMapper(typeof(BookStoreApi.Code.AutoMapper.AutoMapperConfig));
+            services.AddDatabaseDeveloperPageExceptionFilter();
+            services.AddScoped<IBookStoreUnitOfWorkAsync, EntityBookStoreUoWAsync>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -52,7 +58,7 @@ namespace BookStoreApplication {
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
-                app.UseDatabaseErrorPage();
+                app.UseMigrationsEndPoint();
 
             }
             else

@@ -4,7 +4,11 @@ using System.Linq;
 using System.Threading.Tasks;
 
 namespace BookStoreApi.Contracts {
-    public interface IBookStoreUnitOfWork {
+    public interface IBookStoreUnitOfWorkAsync {
+        IRepositoryAsync<Data.Author> Authors { get; }
+
+        IRepositoryAsync<Data.Book> Books { get; }
+
         public Task<bool> SaveData();
     }
 }

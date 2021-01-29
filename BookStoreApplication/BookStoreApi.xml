@@ -4,5 +4,55 @@
         <name>BookStoreApi</name>
     </assembly>
     <members>
+        <member name="T:BookStoreApi.Controllers.AuthorsController">
+            <summary>
+            Endpoint used to interact with authors in the Book store database.
+            </summary>
+        </member>
+        <member name="M:BookStoreApi.Controllers.AuthorsController.GetAuthors">
+            <summary>
+            Gets all authors from database
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:BookStoreApi.Controllers.AuthorsController.GetAuthor(System.Int32)">
+            <summary>
+            Return the author by his Id
+            </summary>
+            <param name="id">Id of the author</param>
+            <returns>Author data, if found</returns>
+        </member>
+        <member name="M:BookStoreApi.Controllers.AuthorsController.Create(BookStoreApi.Data.DTOs.AuthorInsertDTO)">
+            <summary>
+            Create author
+            </summary>
+            <param name="author">Author data</param>
+            <returns>New author if succeed; otherwise - message what went wrong</returns>
+        </member>
+        <member name="P:BookStoreApi.Data.DTOs.AuthorDTO.Id">
+            <summary>
+            Author id
+            </summary>
+        </member>
+        <member name="T:BookStoreApi.Data.DTOs.AuthorInsertDTO">
+            <summary>
+            Manages author update or insert operations
+            </summary>
+        </member>
+        <member name="P:BookStoreApi.Data.DTOs.AuthorInsertDTO.Firstname">
+            <summary>
+            Firts name of the author
+            </summary>
+        </member>
+        <member name="P:BookStoreApi.Data.DTOs.AuthorInsertDTO.Lastname">
+            <summary>
+            Last name of the author
+            </summary>
+        </member>
+        <member name="P:BookStoreApi.Data.DTOs.AuthorInsertDTO.Bio">
+            <summary>
+            Biography of the author
+            </summary>
+        </member>
     </members>
 </doc>

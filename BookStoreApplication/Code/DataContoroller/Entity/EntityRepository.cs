@@ -43,9 +43,9 @@ namespace BookStoreApi.Code.DataContoroller.Entity {
                 _ObjectSet.Remove(entity);
                 result = await Task.FromResult(true);
             }
-            finally
+            catch (Exception)
             {
-
+                throw;
             }
             return result;
         }
@@ -69,6 +69,11 @@ namespace BookStoreApi.Code.DataContoroller.Entity {
                 _ObjectSet.Update(entity);
                 result = await Task.FromResult(true);
             }
+            catch (Exception)
+            {
+                throw;
+            }
+
             finally
             {
 
@@ -78,7 +83,6 @@ namespace BookStoreApi.Code.DataContoroller.Entity {
 
         public async Task<ICollection<TEntity>> WhereAsync(Expression<Func<TEntity, bool>> filter = null, Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>> order = null, IEnumerable<Expression<Func<TEntity, object>>> includes = null)
         {
-
             IQueryable<TEntity> query = _ObjectSet;
             if (filter != null)
             {
