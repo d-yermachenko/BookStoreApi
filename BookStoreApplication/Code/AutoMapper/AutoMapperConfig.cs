@@ -11,7 +11,7 @@ namespace BookStoreApi.Code.AutoMapper {
         public AutoMapperConfig()
         {
             CreateMap<Author, AuthorDTO>().ReverseMap();
-            CreateMap<Author, AuthorInsertDTO>().ReverseMap();
+            CreateMap<Author, AuthorUpsertDTO>().ReverseMap().ForMember(o=>o.Id, a=>a.Ignore());
             CreateMap<Book, BookDTO>().ReverseMap();
 
         }

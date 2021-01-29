@@ -22,7 +22,7 @@
             <param name="id">Id of the author</param>
             <returns>Author data, if found</returns>
         </member>
-        <member name="M:BookStoreApi.Controllers.AuthorsController.Create(BookStoreApi.Data.DTOs.AuthorInsertDTO)">
+        <member name="M:BookStoreApi.Controllers.AuthorsController.Create(BookStoreApi.Data.DTOs.AuthorUpsertDTO)">
             <summary>
             Create author
             </summary>
@@ -34,22 +34,27 @@
             Author id
             </summary>
         </member>
-        <member name="T:BookStoreApi.Data.DTOs.AuthorInsertDTO">
+        <member name="T:BookStoreApi.Data.DTOs.AuthorUpsertDTO">
             <summary>
             Manages author update or insert operations
             </summary>
         </member>
-        <member name="P:BookStoreApi.Data.DTOs.AuthorInsertDTO.Firstname">
+        <member name="P:BookStoreApi.Data.DTOs.AuthorUpsertDTO.Id">
+            <summary>
+            AuthorId
+            </summary>
+        </member>
+        <member name="P:BookStoreApi.Data.DTOs.AuthorUpsertDTO.Firstname">
             <summary>
             Firts name of the author
             </summary>
         </member>
-        <member name="P:BookStoreApi.Data.DTOs.AuthorInsertDTO.Lastname">
+        <member name="P:BookStoreApi.Data.DTOs.AuthorUpsertDTO.Lastname">
             <summary>
             Last name of the author
             </summary>
         </member>
-        <member name="P:BookStoreApi.Data.DTOs.AuthorInsertDTO.Bio">
+        <member name="P:BookStoreApi.Data.DTOs.AuthorUpsertDTO.Bio">
             <summary>
             Biography of the author
             </summary>

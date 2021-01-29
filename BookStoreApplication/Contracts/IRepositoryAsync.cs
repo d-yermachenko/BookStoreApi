@@ -14,6 +14,6 @@ namespace BookStoreApi.Contracts {
 
         Task<ICollection<TEntity>> WhereAsync(Expression<Func<TEntity, bool>> filter = null, Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>> order = null, IEnumerable<Expression<Func<TEntity, object>>> includes = null);
 
-
+        Task<bool> UpdateAsync(TEntity entity);
     }
 }

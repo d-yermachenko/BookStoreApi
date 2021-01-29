@@ -30,7 +30,12 @@ namespace BookStoreApi.Data.DTOs {
     /// <summary>
     /// Manages author update or insert operations
     /// </summary>
-    public class AuthorInsertDTO {
+    public class AuthorUpsertDTO {
+        /// <summary>
+        /// AuthorId
+        /// </summary>
+        public int Id { get; set; }
+
         /// <summary>
         /// Firts name of the author
         /// </summary>

@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 namespace BookStoreApi.Code.DataContoroller.Entity {
     public class EntityRepositoryAsync<TEntity> : IRepositoryAsync<TEntity> where TEntity : class {
 
-        public EntityRepositoryAsync(DbSet<TEntity> entities)
+        public EntityRepositoryAsync(DbSet<TEntity> entities, Expression<Func<TEntity, IComparable>> keyTaker)
         {
             _ObjectSet = entities;
         }

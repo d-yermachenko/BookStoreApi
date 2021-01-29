@@ -108,7 +108,7 @@ namespace BookStoreApi.Controllers {
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> Create([FromBody] AuthorInsertDTO author)
+        public async Task<IActionResult> Create([FromBody] AuthorUpsertDTO author)
         {
             _Logger.LogInformation($"Author submition");
             try
@@ -147,6 +147,62 @@ namespace BookStoreApi.Controllers {
             catch (Exception e)
             {
                 return InternalError(e, $"Unable to create author {author.Firstname} {author.Lastname}");
+            }
+        }
+
+        [HttpPut()]
+        public async Task<IActionResult> Update([FromBody] AuthorUpsertDTO author)
+        {
+            try
+            {
+                int authorId = author.Id;
+                _Logger.LogTrace($"Author {authorId} attempt");
+                if (author == null)
+                {
+                    _Logger.LogTrace($"Author {authorId} attempt");
+                    return StatusCode(StatusCodes.Status400BadRequest, "Empty objecy is not allowed");
+                }
+                if(!ModelState.IsValid)
+                    return StatusCode(StatusCodes.Status400BadRequest, ModelState);
+                var authorToUpdate = await _BookStore.Authors.FindAsync(x => x.Id == authorId);
+                if (authorToUpdate == null)
+                    return NotFound($"Unable to find author to update");
+                authorToUpdate = _Mapper.Map<AuthorUpsertDTO, Author>(author, authorToUpdate);
+                bool succeed = await _BookStore.Authors.UpdateAsync(authorToUpdate);
+                succeed &= await _BookStore.SaveData();
+                if (succeed)
+                    return StatusCode(StatusCodes.Status200OK, authorToUpdate);
+                else
+                    return StatusCode(StatusCodes.Status500InternalServerError, "Unexpected error while updating the author");
+
+            }
+            catch (Exception e)
+            {
+                return InternalError(e, "Unexpected error while updating the author");
+            }
+        }
+
+        [HttpDelete]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> Delete(int id)
+        {
+            try
+            {
+                var author = await _BookStore.Authors.FindAsync(x => x.Id == id);
+                if(author == null)
+                    return StatusCode(StatusCodes.Status404NotFound, "Author not found");
+                bool succeed = await _BookStore.Authors.DeleteAsync(author);
+                succeed &= await _BookStore.SaveData();
+                if (succeed)
+                    return Ok();
+                else
+                    return StatusCode(StatusCodes.Status500InternalServerError, "Unable to remove ");
+            }
+            catch(Exception e)
+            {
+                return InternalError(e, "Cant delete author");
             }
         }
     }
