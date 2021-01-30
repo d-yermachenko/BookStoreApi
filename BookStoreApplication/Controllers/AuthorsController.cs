@@ -18,7 +18,7 @@ namespace BookStoreApi.Controllers {
     [Route("api/[controller]")]
     [ApiController]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    public class AuthorsController : ControllerBase {
+    public class AuthorsController : ControllerBase, IDisposable {
         private readonly ILogger<AuthorsController> _Logger;
         private readonly IBookStoreUnitOfWorkAsync _BookStore;
         private readonly IMapper _Mapper;
@@ -182,7 +182,7 @@ namespace BookStoreApi.Controllers {
                 bool succeed = await _BookStore.Authors.DeleteAsync(author);
                 succeed &= await _BookStore.SaveData();
                 if (succeed)
-                    return Ok();
+                    return StatusCode(StatusCodes.Status204NoContent);
                 else
                     return StatusCode(StatusCodes.Status500InternalServerError, "Unable to remove ");
             }
@@ -190,5 +190,27 @@ namespace BookStoreApi.Controllers {
                 return InternalError(e, "Cant delete author");
             }
         }
+
+
+
+        #region Disposing
+        bool _Disposed;
+
+        public void Dispose() {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected void Dispose(bool disposing) {
+            if (_Disposed)
+                return;
+            if (disposing) {
+                _BookStore.Dispose();
+            }
+            _Disposed = true;
+
+        }
+
+        #endregion
     }
 }

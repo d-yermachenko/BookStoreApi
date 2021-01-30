@@ -24,7 +24,7 @@ namespace BookStoreApi.Data.DTOs {
         [Display(Name = "First name", Description = "Author first name")]
         public string Bio { get; set; }
 
-        public ICollection<Book> Books { get; set; }
+        public ICollection<BookDTO> Books { get; set; }
     }
 
     /// <summary>
