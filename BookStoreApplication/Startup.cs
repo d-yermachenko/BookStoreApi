@@ -16,6 +16,7 @@ using System.Reflection;
 using AutoMapper;
 using BookStoreApi.Contracts;
 using BookStoreApi.Code.DataContoroller.Entity;
+using Newtonsoft.Json;
 
 namespace BookStoreApplication {
     public class Startup {
@@ -44,7 +45,7 @@ namespace BookStoreApplication {
             });
             services.AddControllers();
             services.AddAutoMapper(typeof(BookStoreApi.Code.AutoMapper.AutoMapperConfig));
-            services.AddDatabaseDeveloperPageExceptionFilter();
+            //services.AddDatabaseDeveloperPageExceptionFilter();
             services.AddScoped<IBookStoreUnitOfWorkAsync, EntityBookStoreUoWAsync>();
         }
 

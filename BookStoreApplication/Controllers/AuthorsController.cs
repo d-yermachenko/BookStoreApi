@@ -5,6 +5,7 @@ using BookStoreApi.Data.DTOs;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,7 +18,6 @@ namespace BookStoreApi.Controllers {
     /// </summary>
     [Route("api/[controller]")]
     [ApiController]
-    [ProducesResponseType(StatusCodes.Status200OK)]
     public class AuthorsController : ControllerBase, IDisposable {
         private readonly ILogger<AuthorsController> _Logger;
         private readonly IBookStoreUnitOfWorkAsync _BookStore;
@@ -50,7 +50,7 @@ namespace BookStoreApi.Controllers {
                 _Logger.LogTrace("Returning authors");
                 if (authorsDTOs.Count == 0)
                     return NotFound();
-                return Ok(authorsDTOs);
+                return Ok(authors); ;
             }
             catch (Exception e) {
                 return InternalError(e, "Getting authors provoked internal server error");
@@ -137,15 +137,15 @@ namespace BookStoreApi.Controllers {
         /// <summary>
         /// Updates author data in the database
         /// </summary>
+        /// <param name="authorId">Author id</param>
         /// <param name="author">Author </param>
         /// <returns></returns>
-        [HttpPut]
+        [HttpPut("{authorId}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> Update([FromBody] AuthorUpsertDTO author) {
+        public async Task<IActionResult> Update(int authorId, [FromBody] AuthorUpsertDTO author) {
             try {
-                int authorId = author.Id;
                 _Logger.LogTrace($"Author {authorId} attempt");
                 if (author == null) {
                     _Logger.LogTrace($"Author {authorId} attempt");
@@ -170,8 +170,8 @@ namespace BookStoreApi.Controllers {
             }
         }
 
-        [HttpDelete]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [HttpDelete("{id}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> Delete(int id) {
@@ -196,6 +196,7 @@ namespace BookStoreApi.Controllers {
         #region Disposing
         bool _Disposed;
 
+        [NonAction]
         public void Dispose() {
             Dispose(true);
             GC.SuppressFinalize(this);

@@ -13,16 +13,13 @@ namespace BookStoreApi.Controllers {
     [Route("api/[controller]")]
     [ApiController]
     public class HomeController : ControllerBase {
-        private readonly ILogger<HomeController> _Logger;
 
-        public HomeController(ILoggerFactory loggerFactory) {
-            _Logger = loggerFactory.CreateLogger<HomeController>();
+        public HomeController() {
         }
 
         // GET: api/<ValuesController>
         [HttpGet]
         public IEnumerable<string> Get() {
-            _Logger.LogTrace("Entering the Get-list method");
             return new string[] { "value1", "value2" };
         }
 
@@ -35,6 +32,7 @@ namespace BookStoreApi.Controllers {
         // POST api/<ValuesController>
         [HttpPost]
         public void Post([FromBody] string value) {
+            
         }
 
         // PUT api/<ValuesController>/5

@@ -21,10 +21,10 @@ namespace BookStoreApi.Controllers {
         private readonly IBookStoreUnitOfWorkAsync _BookStore;
         private readonly IMapper _Mapper;
 
-        public BooksController(ILoggerFactory loggerFactory,
+        public BooksController(ILogger<BooksController> logger,
             IBookStoreUnitOfWorkAsync bookStore,
             IMapper mapper) {
-            _Logger = loggerFactory.CreateLogger<BooksController>();
+            _Logger = logger;
             _BookStore = bookStore;
             _Mapper = mapper;
         }
@@ -145,19 +145,19 @@ namespace BookStoreApi.Controllers {
         /// <summary>
         /// Updating book in database
         /// </summary>
+        /// <param name="bookId">Id of book to update</param>
         /// <param name="book">Updated book object</param>
         /// <returns>Updated book</returns>
-        [HttpPut]
+        [HttpPut("{bookId}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> Update(BookUpsertDTO book) {
+        public async Task<IActionResult> Update(int bookId, [FromBody]BookUpsertDTO book) {
             _Logger.LogInformation("Attempting to update book");
             try {
                 if (book == null)
                     return BookBadRequest("Book object must be not empty");
-                int bookId = book.Id;
                 if(bookId <= 0) 
                     return BookBadRequest($"Book id you provided ({bookId}) is inferior of 0 and not exists in database");
                 if (!ModelState.IsValid)
@@ -213,6 +213,7 @@ namespace BookStoreApi.Controllers {
         #region Disposing
         bool _Disposed;
 
+        [NonAction]
         public void Dispose() {
             Dispose(true);
             GC.SuppressFinalize(this);
