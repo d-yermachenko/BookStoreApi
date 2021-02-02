@@ -13,23 +13,31 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using BookStoreApiTests.Mocks;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore.InMemory;
+using Microsoft.EntityFrameworkCore;
+using BookStoreApi.Data;
+using BookStoreApiTests.Mocks.Users;
 
 namespace BookStoreApiTests.TestServers {
-    public class TestFilledClientFactory : ITestClientFactory {
+    public class TestInMemoryDbServer : ITestClientFactory {
 
         private readonly TestServer _server;
         private readonly HttpClient _client;
-        public TestFilledClientFactory() {
+        public TestInMemoryDbServer() {
             _server = new TestServer(new WebHostBuilder()
                                      .UseStartup<BookStoreApplication.Startup>()
                                      .UseConfiguration(ConfigurationProvider.BuildConfiguration())
                                      .ConfigureTestServices((services) => {
-                                         services.AddScoped<IBookStoreUnitOfWorkAsync, MockBookStoreFilledUnitOfWork>();
+                                         services.AddDbContext<BookStoreContext>( options=> {
+                                             options.UseInMemoryDatabase(databaseName: "IMBookStore");
+                                         });
+                                         services.AddScoped<IBookStoreUnitOfWorkAsync, MockBookStoreUsersEnanledUnitOfWork>();
                                          services.AddControllers().AddNewtonsoftJson(options => {
                                              options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore;
                                              options.SerializerSettings.MaxDepth = 2;
                                          });
-                                     })) ;
+                                     })
+                                            ) ;
             _client = _server.CreateClient();
         }
 

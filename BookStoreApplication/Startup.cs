@@ -16,7 +16,6 @@ using System.Reflection;
 using AutoMapper;
 using BookStoreApi.Contracts;
 using BookStoreApi.Code.DataContoroller.Entity;
-using Newtonsoft.Json;
 
 namespace BookStoreApplication {
     public class Startup {
@@ -32,7 +31,9 @@ namespace BookStoreApplication {
                 options.UseSqlServer(
                     Configuration.GetConnectionString("DefaultConnection")));
             services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
-                .AddEntityFrameworkStores<BookStoreApi.Data.BookStoreContext>();
+                .AddRoles<IdentityRole>()
+                .AddEntityFrameworkStores<BookStoreApi.Data.BookStoreContext>()
+                .AddDefaultTokenProviders();
             services.AddLogging();
             services.AddSwaggerGen(setup => {
                 setup.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo() {
@@ -45,7 +46,7 @@ namespace BookStoreApplication {
             });
             services.AddControllers();
             services.AddAutoMapper(typeof(BookStoreApi.Code.AutoMapper.AutoMapperConfig));
-            //services.AddDatabaseDeveloperPageExceptionFilter();
+            services.AddDatabaseDeveloperPageExceptionFilter();
             services.AddScoped<IBookStoreUnitOfWorkAsync, EntityBookStoreUoWAsync>();
         }
 
