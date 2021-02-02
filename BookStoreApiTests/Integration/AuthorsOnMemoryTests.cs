@@ -14,7 +14,7 @@ namespace BookStoreApiTests.Integration {
 
         [TestMethod]
         public async Task GetAuthorsFromInMemoryDb() {
-            var client = new TestInMemoryDbServer().TestClient;
+            var client = new TestInMemoryDbServerClientFactory().TestClient;
             var response = await client.GetAsync("/api/Authors");
             bool succeed = response.IsSuccessStatusCode;
             var responseString = await response.Content.ReadAsStringAsync();

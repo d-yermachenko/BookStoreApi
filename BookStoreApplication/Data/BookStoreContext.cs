@@ -9,12 +9,14 @@ using Microsoft.EntityFrameworkCore.Metadata;
 // #nullable disable
 
 namespace BookStoreApi.Data {
-    public partial class BookStoreContext : IdentityDbContext<IdentityUser, IdentityRole, string> {
-        public BookStoreContext() {
+    public partial class BookStoreContext : DbContext {
+
+        public BookStoreContext() : base() {
+
         }
 
-        public BookStoreContext(DbContextOptions<BookStoreContext> options)
-            : base(options) {
+        public BookStoreContext(DbContextOptions<BookStoreContext> options) : base(options) {
+
         }
 
         public virtual DbSet<Author> Authors { get; set; }

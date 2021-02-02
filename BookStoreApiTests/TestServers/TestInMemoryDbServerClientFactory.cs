@@ -19,25 +19,29 @@ using BookStoreApi.Data;
 using BookStoreApiTests.Mocks.Users;
 
 namespace BookStoreApiTests.TestServers {
-    public class TestInMemoryDbServer : ITestClientFactory {
+    public class TestInMemoryDbServerClientFactory : ITestClientFactory {
 
         private readonly TestServer _server;
         private readonly HttpClient _client;
-        public TestInMemoryDbServer() {
+        public TestInMemoryDbServerClientFactory() {
             _server = new TestServer(new WebHostBuilder()
                                      .UseStartup<BookStoreApplication.Startup>()
                                      .UseConfiguration(ConfigurationProvider.BuildConfiguration())
                                      .ConfigureTestServices((services) => {
-                                         services.AddDbContext<BookStoreContext>( options=> {
+                                         services.AddDbContext<BookStoreContext>(options => {
                                              options.UseInMemoryDatabase(databaseName: "IMBookStore");
                                          });
+                                         services.AddDbContext<BookStoreIdentityDbContext>(options => {
+                                             options.UseInMemoryDatabase(databaseName: "IMBookStoreIdentity");
+                                         });
+                                         services.AddTransient<IAppDataSeeder, MockDataSeeder>();
                                          services.AddScoped<IBookStoreUnitOfWorkAsync, MockBookStoreUsersEnanledUnitOfWork>();
                                          services.AddControllers().AddNewtonsoftJson(options => {
                                              options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore;
                                              options.SerializerSettings.MaxDepth = 2;
                                          });
                                      })
-                                            ) ;
+                                            );
             _client = _server.CreateClient();
         }
 

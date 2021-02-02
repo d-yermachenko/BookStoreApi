@@ -18,8 +18,8 @@ using BookStoreApi.Contracts;
 using BookStoreApi.Code.DataContoroller.Entity;
 
 namespace BookStoreApplication {
-    public class Startup {
-        public Startup(IConfiguration configuration) {
+    public class InMemoryStartup {
+        public InMemoryStartup(IConfiguration configuration) {
             Configuration = configuration;
         }
 
@@ -27,13 +27,13 @@ namespace BookStoreApplication {
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services) {
-            services.AddDbContext<BookStoreApi.Data.BookStoreContext>(options =>
-                options.UseSqlServer(
-                    Configuration.GetConnectionString("DefaultConnection")));
-            services.AddDbContext<BookStoreApi.Data.BookStoreIdentityDbContext>(options =>
-                options.UseSqlServer(
-                    Configuration.GetConnectionString("DefaultConnection")));
-            services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
+            services.AddDbContext<BookStoreApi.Data.BookStoreContext>(options => {
+                options.UseInMemoryDatabase(databaseName: "IMBookStore");
+            });
+            services.AddDbContext<BookStoreApi.Data.BookStoreIdentityDbContext>(options => {
+                options.UseInMemoryDatabase(databaseName: "IMBookLoginsStore");
+            });
+            services.AddDefaultIdentity<IdentityUser>()
                 .AddRoles<IdentityRole>()
                 .AddEntityFrameworkStores<BookStoreApi.Data.BookStoreIdentityDbContext>()
                 .AddDefaultTokenProviders();
@@ -50,7 +50,7 @@ namespace BookStoreApplication {
             services.AddControllers();
             services.AddAutoMapper(typeof(BookStoreApi.Code.AutoMapper.AutoMapperConfig));
             services.AddDatabaseDeveloperPageExceptionFilter();
-            services.AddTransient<IAppDataSeeder, BookStoreApi.Code.AppDataSeeder>();
+            services.AddTransient<IAppDataSeeder, BookStoreApi.Code.AppInMemoryDataSeeder>();
             services.AddScoped<IBookStoreUnitOfWorkAsync, EntityBookStoreUoWAsync>();
         }
 

@@ -4,6 +4,12 @@
         <name>BookStoreApi</name>
     </assembly>
     <members>
+        <member name="T:BookStoreApi.Code.AppInMemoryDataSeeder">
+            <summary>
+            
+            </summary>
+            <deprecated/>
+        </member>
         <member name="T:BookStoreApi.Controllers.AuthorsController">
             <summary>
             Endpoint used to interact with authors in the Book store database.
