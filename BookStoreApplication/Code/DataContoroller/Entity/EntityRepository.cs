@@ -43,7 +43,7 @@ namespace BookStoreApi.Code.DataContoroller.Entity {
         }
 
         public async Task<TEntity> FindAsync(Expression<Func<TEntity, bool>> filter, IEnumerable<Expression<Func<TEntity, object>>> includes = null) {
-            IQueryable<TEntity> query = _ObjectSet;
+            IQueryable<TEntity> query = _ObjectSet.AsQueryable();
             if (includes != null) {
                 foreach (var include in includes)
                     query = query.Include(include);
@@ -68,7 +68,7 @@ namespace BookStoreApi.Code.DataContoroller.Entity {
         }
 
         public async Task<ICollection<TEntity>> WhereAsync(Expression<Func<TEntity, bool>> filter = null, Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>> order = null, IEnumerable<Expression<Func<TEntity, object>>> includes = null) {
-            IQueryable<TEntity> query = _ObjectSet;
+            IQueryable<TEntity> query = _ObjectSet.AsQueryable();
             if (filter != null) {
                 query = query.Where(filter);
             }

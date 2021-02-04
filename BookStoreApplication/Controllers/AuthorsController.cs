@@ -18,7 +18,7 @@ namespace BookStoreApi.Controllers {
     /// </summary>
     [Route("api/[controller]")]
     [ApiController]
-    public class AuthorsController : ControllerBase, IDisposable {
+    public class AuthorsController : ControllerBase {
         private readonly ILogger<AuthorsController> _Logger;
         private readonly IBookStoreUnitOfWorkAsync _BookStore;
         private readonly IMapper _Mapper;
@@ -125,7 +125,7 @@ namespace BookStoreApi.Controllers {
                 }
                 else {
                     _Logger.LogInformation("Author creates successfully");
-                    return Created("Create", writer);
+                    return Created("Create", _Mapper.Map<AuthorUpsertDTO>(writer));
                 }
 
             }
@@ -160,7 +160,7 @@ namespace BookStoreApi.Controllers {
                 bool succeed = await _BookStore.Authors.UpdateAsync(authorToUpdate);
                 succeed &= await _BookStore.SaveData();
                 if (succeed)
-                    return StatusCode(StatusCodes.Status200OK, authorToUpdate);
+                    return StatusCode(StatusCodes.Status200OK, _Mapper.Map<AuthorUpsertDTO>(authorToUpdate));
                 else
                     return StatusCode(StatusCodes.Status500InternalServerError, "Unexpected error while updating the author");
 
@@ -194,23 +194,23 @@ namespace BookStoreApi.Controllers {
 
 
         #region Disposing
-        bool _Disposed;
+        //bool _Disposed;
 
-        [NonAction]
-        public void Dispose() {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
+        //[NonAction]
+        //public void Dispose() {
+        //    Dispose(true);
+        //    GC.SuppressFinalize(this);
+        //}
 
-        protected void Dispose(bool disposing) {
-            if (_Disposed)
-                return;
-            if (disposing) {
-                _BookStore.Dispose();
-            }
-            _Disposed = true;
+        //protected void Dispose(bool disposing) {
+        //    if (_Disposed)
+        //        return;
+        //    if (disposing) {
+        //        _BookStore.Dispose();
+        //    }
+        //    _Disposed = true;
 
-        }
+        //}
 
         #endregion
     }

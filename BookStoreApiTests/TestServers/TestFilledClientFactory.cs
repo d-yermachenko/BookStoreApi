@@ -13,6 +13,8 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using BookStoreApiTests.Mocks;
 using Microsoft.AspNetCore.Identity;
+using BookStoreApi.Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace BookStoreApiTests.TestServers {
     public class TestFilledClientFactory : ITestClientFactory {
@@ -24,6 +26,15 @@ namespace BookStoreApiTests.TestServers {
                                      .UseStartup<BookStoreApplication.Startup>()
                                      .UseConfiguration(ConfigurationProvider.BuildConfiguration())
                                      .ConfigureTestServices((services) => {
+                                         services.AddSingleton(provider => {
+                                             var bookStoreIdentityDbOptions = new DbContextOptionsBuilder<BookStoreIdentityDbContext>()
+                                            .UseInMemoryDatabase("IMBookStoreIdentity")
+                                            .Options;
+                                             var bookStoreIdentityDbContext = new BookStoreIdentityDbContext(bookStoreIdentityDbOptions);
+                                             bookStoreIdentityDbContext.Database.EnsureDeleted();
+                                             return bookStoreIdentityDbContext;
+                                         });
+
                                          services.AddScoped<IBookStoreUnitOfWorkAsync, MockBookStoreFilledUnitOfWork>();
                                          services.AddControllers().AddNewtonsoftJson(options => {
                                              options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore;

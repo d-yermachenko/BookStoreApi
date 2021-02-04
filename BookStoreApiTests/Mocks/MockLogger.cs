@@ -13,8 +13,7 @@ namespace BookStoreApiTests.Mocks {
         private readonly Mock<ILogger<TBase>> _Mock;
         public MockLogger() {
             _Mock = new Mock<ILogger<TBase>>();
-
-           
+          
             
         }
 

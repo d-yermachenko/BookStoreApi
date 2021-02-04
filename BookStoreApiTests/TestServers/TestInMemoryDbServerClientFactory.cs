@@ -16,10 +16,11 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore.InMemory;
 using Microsoft.EntityFrameworkCore;
 using BookStoreApi.Data;
-using BookStoreApiTests.Mocks.Users;
+using BookStoreApiTests.Mocks.InMemory;
 
 namespace BookStoreApiTests.TestServers {
-    public class TestInMemoryDbServerClientFactory : ITestClientFactory {
+    public class TestInMemoryDbServerClientFactory<TDataSeeder> : ITestClientFactory
+        where TDataSeeder : class, IAppDataSeeder {
 
         private readonly TestServer _server;
         private readonly HttpClient _client;
@@ -28,20 +29,34 @@ namespace BookStoreApiTests.TestServers {
                                      .UseStartup<BookStoreApplication.Startup>()
                                      .UseConfiguration(ConfigurationProvider.BuildConfiguration())
                                      .ConfigureTestServices((services) => {
-                                         services.AddDbContext<BookStoreContext>(options => {
-                                             options.UseInMemoryDatabase(databaseName: "IMBookStore");
+                                         //https://github.com/aspnet/Hosting/issues/1012
+
+                                         services.AddSingleton(provider => {
+                                             var bookStoreDbOptions = new DbContextOptionsBuilder<BookStoreContext>()
+                                            .UseInMemoryDatabase("IMBookStore")
+                                            .Options;
+                                             var bookStoreDbContext = new MockBookStoreInMemoryContext(bookStoreDbOptions);
+                                             bookStoreDbContext.Database.EnsureDeleted();
+                                             return bookStoreDbContext;
                                          });
-                                         services.AddDbContext<BookStoreIdentityDbContext>(options => {
-                                             options.UseInMemoryDatabase(databaseName: "IMBookStoreIdentity");
+
+                                         services.AddSingleton(provider => {
+                                             var bookStoreIdentityDbOptions = new DbContextOptionsBuilder<BookStoreIdentityDbContext>()
+                                            .UseInMemoryDatabase("IMBookStoreIdentity")
+                                            .Options;
+                                             var bookStoreIdentityDbContext = new BookStoreIdentityDbContext(bookStoreIdentityDbOptions);
+                                             bookStoreIdentityDbContext.Database.EnsureDeleted();
+                                             return bookStoreIdentityDbContext;
                                          });
-                                         services.AddTransient<IAppDataSeeder, MockDataSeeder>();
-                                         services.AddScoped<IBookStoreUnitOfWorkAsync, MockBookStoreUsersEnanledUnitOfWork>();
+
+                                         services.AddScoped<IBookStoreUnitOfWorkAsync, MockBookStoreInMemoryUnitOfWork>();
+                                         services.AddTransient<IAppDataSeeder, TDataSeeder>();
+
                                          services.AddControllers().AddNewtonsoftJson(options => {
                                              options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore;
                                              options.SerializerSettings.MaxDepth = 2;
                                          });
-                                     })
-                                            );
+                                     }));
             _client = _server.CreateClient();
         }
 

@@ -16,7 +16,7 @@ namespace BookStoreApplication {
         public static IHostBuilder CreateHostBuilder(string[] args) =>
             Host.CreateDefaultBuilder(args)
                 .ConfigureWebHostDefaults(webBuilder => {
-                    webBuilder.UseStartup<InMemoryStartup>();
+                    webBuilder.UseStartup<Startup>();
                 });
     }
 }
