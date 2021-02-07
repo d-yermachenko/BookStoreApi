@@ -86,7 +86,7 @@ namespace BookStoreApiTests.Mocks {
                     UserName = "admin",
                     Email = "admin@bookstore.com"
                 };
-                var result = await userManager.CreateAsync(user, "P@ssword1");
+                var result = await userManager.CreateAsync(user, "P@ssword128!");
                 if (result.Succeeded) {
                     await userManager.AddToRoleAsync(user, "Administrator");
                 }
@@ -96,7 +96,7 @@ namespace BookStoreApiTests.Mocks {
                     UserName = "customer1",
                     Email = "customer1@gmail.com"
                 };
-                var result = await userManager.CreateAsync(user, "P@ssword1");
+                var result = await userManager.CreateAsync(user, "P@ssword2");
                 if (result.Succeeded) {
                     await userManager.AddToRoleAsync(user, "Customer");
                 }
@@ -106,7 +106,7 @@ namespace BookStoreApiTests.Mocks {
                     UserName = "customer2",
                     Email = "customer2@gmail.com"
                 };
-                var result = await userManager.CreateAsync(user, "P@ssword1");
+                var result = await userManager.CreateAsync(user, "P@ssword3");
                 if (result.Succeeded) {
                     await userManager.AddToRoleAsync(user, "Customer");
                 }

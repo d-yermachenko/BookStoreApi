@@ -71,6 +71,13 @@
             <param name="book">Updated book object</param>
             <returns>Updated book</returns>
         </member>
+        <member name="M:BookStoreApi.Controllers.UsersController.Login(BookStoreApi.Data.DTOs.UserLoginDTO)">
+            <summary>
+            User login endpoint
+            </summary>
+            <param name="userLogin"></param>
+            <returns></returns>
+        </member>
         <member name="P:BookStoreApi.Data.DTOs.AuthorDTO.Id">
             <summary>
             Author id

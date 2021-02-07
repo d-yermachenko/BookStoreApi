@@ -23,7 +23,7 @@ namespace BookStoreApiTests.TestServers {
         public TestEmptyClientFactory() {
             _server = new TestServer(new WebHostBuilder()
                                      .UseStartup<BookStoreApplication.Startup>()
-                                     .UseConfiguration(ConfigurationProvider.BuildConfiguration())
+                                     .UseConfiguration(ConfigurationProvider.BuildBearerConfiguration())
                                      .ConfigureTestServices((services) => {
                                          services.AddSingleton(provider => {
                                              var bookStoreIdentityDbOptions = new DbContextOptionsBuilder<BookStoreIdentityDbContext>()

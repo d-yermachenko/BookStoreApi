@@ -208,27 +208,5 @@ namespace BookStoreApi.Controllers {
             }
 
         }
-
-
-        #region Disposing
-        //bool _Disposed;
-
-        //[NonAction]
-        //public void Dispose() {
-        //    Dispose(true);
-        //    GC.SuppressFinalize(this);
-        //}
-
-        //protected void Dispose(bool disposing) {
-        //    if (_Disposed)
-        //        return;
-        //    if (disposing) {
-        //        _BookStore.Dispose();
-        //    }
-        //    _Disposed = true;
-
-        //}
-
-        #endregion
     }
 }

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -25,6 +26,7 @@ namespace BookStoreApi.Controllers {
 
         // GET api/<ValuesController>/5
         [HttpGet("{id}")]
+        [Authorize]
         public string Get(int id) {
             return "value";
         }

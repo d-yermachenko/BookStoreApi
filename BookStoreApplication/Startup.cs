@@ -16,6 +16,9 @@ using System.Reflection;
 using AutoMapper;
 using BookStoreApi.Contracts;
 using BookStoreApi.Code.DataContoroller.Entity;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 namespace BookStoreApplication {
     public class Startup {
@@ -33,7 +36,7 @@ namespace BookStoreApplication {
             services.AddDbContext<BookStoreApi.Data.BookStoreIdentityDbContext>(options =>
                 options.UseSqlServer(
                     Configuration.GetConnectionString("DefaultConnection")));
-            services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
+            services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = false)
                 .AddRoles<IdentityRole>()
                 .AddEntityFrameworkStores<BookStoreApi.Data.BookStoreIdentityDbContext>()
                 .AddDefaultTokenProviders();
@@ -48,6 +51,18 @@ namespace BookStoreApplication {
                 setup.IncludeXmlComments(xFile, true);
             });
             services.AddControllers();
+            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                .AddJwtBearer(o => { o.TokenValidationParameters = new TokenValidationParameters() {
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+                    ValidIssuer = Configuration.GetValue<string>("Jwt:Issuer"),
+                    ValidAudience = Configuration.GetValue<string>("Jwt:Issuer"),
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration.GetValue<string>("Jwt:Key")))
+                }; 
+                });
+
             services.AddAutoMapper(typeof(BookStoreApi.Code.AutoMapper.AutoMapperConfig));
             services.AddDatabaseDeveloperPageExceptionFilter();
             services.AddTransient<IAppDataSeeder, BookStoreApi.Code.AppDataSeeder>();
