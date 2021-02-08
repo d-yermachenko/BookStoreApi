@@ -1,4 +1,5 @@
-﻿using BookStoreApi.Data.DTOs;
+﻿using BookStoreApi.Data.Authentification;
+using BookStoreApi.Data.DTOs;
 using BookStoreApiTests.Mocks.MockIdentity;
 using BookStoreApiTests.TestServers;
 using Microsoft.AspNetCore.Http;
@@ -69,8 +70,8 @@ namespace BookStoreApiTests.Integration {
         [TestMethod]
         public async Task LoginInternalServerError500() {
             var userController = new BookStoreApi.Controllers.UsersController(
-                new FakeSignInManager<IdentityUser>(), 
-                new FakeUserManager<IdentityUser>(),
+                new FakeSignInManager<AppUser>(), 
+                new FakeUserManager<AppUser>(),
                 ConfigurationProvider.BuildConfiguration(),
                 new Mocks.MockLogger<BookStoreApi.Controllers.UsersController>()
                 
@@ -84,7 +85,7 @@ namespace BookStoreApiTests.Integration {
 
         #endregion
 
-        #region BearerToken
-        #endregion
+
+
     }
 }

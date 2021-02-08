@@ -19,6 +19,7 @@ using BookStoreApi.Code.DataContoroller.Entity;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using BookStoreApi.Data.Authentification;
 
 namespace BookStoreApplication {
     public class Startup {
@@ -36,8 +37,8 @@ namespace BookStoreApplication {
             services.AddDbContext<BookStoreApi.Data.BookStoreIdentityDbContext>(options =>
                 options.UseSqlServer(
                     Configuration.GetConnectionString("DefaultConnection")));
-            services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = false)
-                .AddRoles<IdentityRole>()
+            services.AddDefaultIdentity<AppUser>(options => options.SignIn.RequireConfirmedAccount = false)
+                .AddRoles<AppRole>()
                 .AddEntityFrameworkStores<BookStoreApi.Data.BookStoreIdentityDbContext>()
                 .AddDefaultTokenProviders();
             services.AddLogging();

@@ -1,5 +1,6 @@
 ﻿using BookStoreApi.Contracts;
 using BookStoreApi.Data;
+using BookStoreApi.Data.Authentification;
 using Microsoft.AspNetCore.Identity;
 using System;
 using System.Collections.Generic;
@@ -11,11 +12,11 @@ namespace BookStoreApiTests.Mocks {
     public class MockDataSeeder : IAppDataSeeder {
 
         private readonly IBookStoreUnitOfWorkAsync _BookStore;
-        private readonly UserManager<IdentityUser> _UserManager;
-        private readonly RoleManager<IdentityRole> _RoleManager;
+        private readonly UserManager<AppUser> _UserManager;
+        private readonly RoleManager<AppRole> _RoleManager;
         public MockDataSeeder(IBookStoreUnitOfWorkAsync bookStore,
-            UserManager<IdentityUser> userManager,
-            RoleManager<IdentityRole> roleManager) {
+            UserManager<AppUser> userManager,
+            RoleManager<AppRole> roleManager) {
             _BookStore = bookStore;
             _UserManager = userManager;
             _RoleManager = roleManager;
@@ -80,9 +81,9 @@ namespace BookStoreApiTests.Mocks {
             await _BookStore.Books.CreateAsync(theGodsThemselves);
         }
 
-        private async static Task SeedUsers(UserManager<IdentityUser> userManager) {
+        private async static Task SeedUsers(UserManager<AppUser> userManager) {
             if (await userManager.FindByEmailAsync("admin@bookstore.com") == null) {
-                var user = new IdentityUser {
+                var user = new AppUser {
                     UserName = "admin",
                     Email = "admin@bookstore.com"
                 };
@@ -92,7 +93,7 @@ namespace BookStoreApiTests.Mocks {
                 }
             }
             if (await userManager.FindByEmailAsync("customer1@gmail.com") == null) {
-                var user = new IdentityUser {
+                var user = new AppUser {
                     UserName = "customer1",
                     Email = "customer1@gmail.com"
                 };
@@ -102,7 +103,7 @@ namespace BookStoreApiTests.Mocks {
                 }
             }
             if (await userManager.FindByEmailAsync("customer2@gmail.com") == null) {
-                var user = new IdentityUser {
+                var user = new AppUser {
                     UserName = "customer2",
                     Email = "customer2@gmail.com"
                 };
@@ -113,16 +114,16 @@ namespace BookStoreApiTests.Mocks {
             }
         }
 
-        private async static Task SeedRoles(RoleManager<IdentityRole> roleManager) {
+        private async static Task SeedRoles(RoleManager<AppRole> roleManager) {
             if (!await roleManager.RoleExistsAsync("Administrator")) {
-                var role = new IdentityRole {
+                var role = new AppRole {
                     Name = "Administrator"
                 };
                 await roleManager.CreateAsync(role);
             }
 
             if (!await roleManager.RoleExistsAsync("Customer")) {
-                var role = new IdentityRole {
+                var role = new AppRole {
                     Name = "Customer"
                 };
                 await roleManager.CreateAsync(role);

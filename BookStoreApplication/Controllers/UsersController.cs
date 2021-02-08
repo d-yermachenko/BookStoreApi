@@ -1,4 +1,5 @@
-﻿using BookStoreApi.Data.DTOs;
+﻿using BookStoreApi.Data.Authentification;
+using BookStoreApi.Data.DTOs;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
@@ -19,15 +20,15 @@ namespace BookStoreApi.Controllers {
     [ApiController]
     [Authorize]
     public class UsersController : ControllerBase {
-        private readonly SignInManager<IdentityUser> _SignInManager;
-        private readonly UserManager<IdentityUser> _UserManager;
+        private readonly SignInManager<AppUser> _SignInManager;
+        private readonly UserManager<AppUser> _UserManager;
         private readonly IConfiguration _Configuration;
         private readonly ILogger<UsersController> _Logger;
 
 
         public UsersController(
-            SignInManager<IdentityUser> signInManager,
-            UserManager<IdentityUser> userManager, 
+            SignInManager<AppUser> signInManager,
+            UserManager<AppUser> userManager, 
             IConfiguration configuration,
             ILogger<UsersController> logger) {
             _UserManager = userManager;
@@ -84,7 +85,7 @@ namespace BookStoreApi.Controllers {
             }
         }
 
-        private async Task<string> GenerateBearerToken(IdentityUser user) {
+        private async Task<string> GenerateBearerToken(AppUser user) {
             string result = string.Empty;
             SecurityKey key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_Configuration.GetValue<string>("Jwt:Key")));
             if (!TimeSpan.TryParse(_Configuration.GetValue<string>("Jvt:Validity"), out TimeSpan validity))

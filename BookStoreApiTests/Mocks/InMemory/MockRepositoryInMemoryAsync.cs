@@ -24,7 +24,7 @@ namespace BookStoreApiTests.Mocks.InMemory {
         }
 
         public async Task<bool> DeleteAsync(TInstance entity) {
-            bool result = false;
+            bool result ;
             try {
                 _Dataset.Remove(entity);
                 result = await Task.FromResult(true);

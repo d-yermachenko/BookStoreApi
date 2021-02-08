@@ -20,28 +20,36 @@ namespace BookStoreApi.Controllers {
 
         // GET: api/<ValuesController>
         [HttpGet]
+        [Authorize]
         public IEnumerable<string> Get() {
             return new string[] { "value1", "value2" };
         }
 
         // GET api/<ValuesController>/5
         [HttpGet("{id}")]
-        [Authorize]
+        [AllowAnonymous]
         public string Get(int id) {
             return "value";
         }
 
-        // POST api/<ValuesController>
+        /// <summary>
+        /// Tesp method to authorize only customer
+        /// </summary>
+        /// <param name="value"></param>
         [HttpPost]
+        [Authorize(Roles ="Administrator,Customer")]
         public void Post([FromBody] string value) {
             
         }
 
         // PUT api/<ValuesController>/5
         [HttpPut("{id}")]
+        [Authorize(Roles = "Customer")]
         public void Put(int id, [FromBody] string value) {
+            ;
         }
 
+        [Authorize(Roles = "Administrator")]
         // DELETE api/<ValuesController>/5
         [HttpDelete("{id}")]
         public void Delete(int id) {

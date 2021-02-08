@@ -16,7 +16,7 @@ namespace BookStoreApi.Code.DataContoroller.Entity {
         private readonly DbSet<TEntity> _ObjectSet;
 
         public async Task<bool> CreateAsync(TEntity entity) {
-            bool result = false;
+            bool result;
             try {
                 await _ObjectSet.AddAsync(entity);
                 result = true;
@@ -31,7 +31,7 @@ namespace BookStoreApi.Code.DataContoroller.Entity {
         }
 
         public async Task<bool> DeleteAsync(TEntity entity) {
-            bool result = false;
+            bool result;
             try {
                 _ObjectSet.Remove(entity);
                 result = await Task.FromResult(true);
@@ -52,7 +52,7 @@ namespace BookStoreApi.Code.DataContoroller.Entity {
         }
 
         public async Task<bool> UpdateAsync(TEntity entity) {
-            bool result = false;
+            bool result ;
             try {
                 _ObjectSet.Update(entity);
                 result = await Task.FromResult(true);

@@ -24,8 +24,8 @@ namespace BookStoreApiTests.Mocks.InMemory {
 
         private readonly object locker = new object();
 
-        private Func<TEntity, TKey> _KeyTaker;
-        private Func<TKey, TKey> _ValueIncrementor;
+        private readonly Func<TEntity, TKey> _KeyTaker;
+        private readonly Func<TKey, TKey> _ValueIncrementor;
 
         protected CustomInMemoryValueGenerator(Expression<Func<TEntity, TKey>> keyTaker, Expression<Func<TKey, TKey>> incrementFunc) {
             _KeyTaker = keyTaker.Compile();

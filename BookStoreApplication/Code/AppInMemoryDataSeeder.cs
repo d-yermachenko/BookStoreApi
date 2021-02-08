@@ -1,5 +1,6 @@
 ﻿using BookStoreApi.Contracts;
 using BookStoreApi.Data;
+using BookStoreApi.Data.Authentification;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 using System;
@@ -16,13 +17,13 @@ namespace BookStoreApi.Code {
     public class AppInMemoryDataSeeder : IAppDataSeeder {
 
         private readonly IBookStoreUnitOfWorkAsync _BookStore;
-        private readonly UserManager<IdentityUser> _UserManager;
-        private readonly RoleManager<IdentityRole> _RoleManager;
+        private readonly UserManager<AppUser> _UserManager;
+        private readonly RoleManager<AppRole> _RoleManager;
         private readonly ILogger<IAppDataSeeder> _Logger;
 
         public AppInMemoryDataSeeder(IBookStoreUnitOfWorkAsync bookStore, 
-            UserManager<IdentityUser> userManager,
-            RoleManager<IdentityRole> roleManager,
+            UserManager<AppUser> userManager,
+            RoleManager<AppRole> roleManager,
             ILogger<IAppDataSeeder> logger) {
             _BookStore = bookStore;
             _UserManager = userManager;
@@ -41,9 +42,9 @@ namespace BookStoreApi.Code {
         }
 
 
-        private async static Task SeedUsers(UserManager<IdentityUser> userManager) {
+        private async static Task SeedUsers(UserManager<AppUser> userManager) {
             if (await userManager.FindByEmailAsync("admin@bookstore.com") == null) {
-                var user = new IdentityUser {
+                var user = new AppUser {
                     UserName = "admin",
                     Email = "admin@bookstore.com"
                 };
@@ -53,7 +54,7 @@ namespace BookStoreApi.Code {
                 }
             }
             if (await userManager.FindByEmailAsync("customer1@gmail.com") == null) {
-                var user = new IdentityUser {
+                var user = new AppUser {
                     UserName = "customer1",
                     Email = "customer1@gmail.com"
                 };
@@ -63,7 +64,7 @@ namespace BookStoreApi.Code {
                 }
             }
             if (await userManager.FindByEmailAsync("customer2@gmail.com") == null) {
-                var user = new IdentityUser {
+                var user = new AppUser {
                     UserName = "customer2",
                     Email = "customer2@gmail.com"
                 };
@@ -74,16 +75,16 @@ namespace BookStoreApi.Code {
             }
         }
 
-        private async static Task SeedRoles(RoleManager<IdentityRole> roleManager) {
+        private async static Task SeedRoles(RoleManager<AppRole> roleManager) {
             if (!await roleManager.RoleExistsAsync("Administrator")) {
-                var role = new IdentityRole {
+                var role = new AppRole {
                     Name = "Administrator"
                 };
                 await roleManager.CreateAsync(role);
             }
 
             if (!await roleManager.RoleExistsAsync("Customer")) {
-                var role = new IdentityRole {
+                var role = new AppRole {
                     Name = "Customer"
                 };
                 await roleManager.CreateAsync(role);
@@ -110,7 +111,7 @@ namespace BookStoreApi.Code {
                 Year = 1960,
                 Isbn = "978-5-17-106224-8",
                 Summary = "Exelent partody to scientists community",
-                Authors = new Author[] {  }
+                Authors = Array.Empty<Author>()
             };
 
             Book hardToBeTheGod = new Book() {
@@ -119,7 +120,7 @@ namespace BookStoreApi.Code {
                 Year = 1960,
                 Isbn = "978-5-17-106224-8",
                 Summary = "Another view what happens to civilizations",
-                Authors = new Author[] {}
+                Authors = Array.Empty<Author>()
             };
 
             Book theGodsThemselves = new Book() {
@@ -128,7 +129,7 @@ namespace BookStoreApi.Code {
                 Year = 1972,
                 Isbn = "978-8-49-800851-7",
                 Summary = "Another view what happens to civilizations",
-                Authors = new Author[] {  }
+                Authors = Array.Empty <Author>()
             };
 
             await _BookStore.Books.CreateAsync(mondayStartsSaturday);

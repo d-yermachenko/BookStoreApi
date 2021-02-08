@@ -17,7 +17,6 @@ namespace BookStoreApiTests.TestServers {
             Dictionary<string, string> config = new Dictionary<string, string>();
             config.Add("Jwt:Key", "c8fc66ec-98d2-432b-b224-122d0a6957d6");
             config.Add("Jwt:Issuer", "Book store app");
-            var result = BuildConfiguration();
             IConfigurationBuilder builder = new ConfigurationBuilder()
                 .AddInMemoryCollection(config)
                 .SetBasePath(Directory.GetCurrentDirectory())
