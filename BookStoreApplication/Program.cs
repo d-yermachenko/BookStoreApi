@@ -4,6 +4,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -15,8 +16,17 @@ namespace BookStoreApplication {
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>
             Host.CreateDefaultBuilder(args)
-                .ConfigureWebHostDefaults(webBuilder => {
-                    webBuilder.UseStartup<Startup>();
-                });
+
+            .ConfigureAppConfiguration((env, conf) => {
+                conf.SetBasePath(Directory.GetCurrentDirectory())
+                .AddJsonFile("appsettings.json", optional: true, true)
+                .AddJsonFile($"appsettings.{env.HostingEnvironment.EnvironmentName}.json", optional: true, true)
+                .AddCommandLine(args)
+                .AddUserSecrets(env.HostingEnvironment.ApplicationName)
+                .Build();
+            })
+              .ConfigureWebHostDefaults(webBuilder => {
+                  webBuilder.UseStartup<Startup>();
+              });
     }
 }

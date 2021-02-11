@@ -48,7 +48,7 @@ namespace BookStoreApiTests.Integration {
         public async Task LoginAccepted202() {
             var client = new TestInMemoryDbServerClientFactory<Mocks.MockDataSeeder>().TestClient;
             string serializeContent = JsonConvert.SerializeObject(AdminLoginData);
-            var response = await client.PostAsync("/api/Users", new StringContent(serializeContent, Encoding.UTF8, "application/json"));
+            var response = await client.PostAsync("/api/Users/login", new StringContent(serializeContent, Encoding.UTF8, "application/json"));
             UserLoginData userLoginData = JsonConvert.DeserializeObject<UserLoginData>(await response.Content.ReadAsStringAsync());
             System.Diagnostics.Trace.Write(userLoginData.Token);
             Assert.AreEqual(HttpStatusCode.Accepted, response.StatusCode);
@@ -70,7 +70,7 @@ namespace BookStoreApiTests.Integration {
         [TestMethod]
         public async Task TestAnonimousForbiddenOk() {
             using var client = new TestInMemoryDbServerClientFactory<Mocks.MockDataSeeder>().TestClient;
-            var loginResponce = await client.PostAsync("api/Users", new StringContent(JsonConvert.SerializeObject(
+            var loginResponce = await client.PostAsync("/api/Users/login", new StringContent(JsonConvert.SerializeObject(
                 AdminLoginData), Encoding.UTF8, "application/json"));
             loginResponce.EnsureSuccessStatusCode();
             UserLoginData loginData = JsonConvert.DeserializeObject<UserLoginData>(await loginResponce.Content.ReadAsStringAsync());
@@ -104,7 +104,7 @@ namespace BookStoreApiTests.Integration {
         [TestMethod]
         public async Task TestAnonymousAllowedLoggedIn() {
             using var client = new TestInMemoryDbServerClientFactory<Mocks.MockDataSeeder>().TestClient;
-            var loginResponce = await client.PostAsync("api/Users", new StringContent(JsonConvert.SerializeObject(
+            var loginResponce = await client.PostAsync("/api/Users/login", new StringContent(JsonConvert.SerializeObject(
                 AdminLoginData), Encoding.UTF8, "application/json"));
             loginResponce.EnsureSuccessStatusCode();
             UserLoginData loginData = JsonConvert.DeserializeObject<UserLoginData>(await loginResponce.Content.ReadAsStringAsync());
@@ -132,7 +132,7 @@ namespace BookStoreApiTests.Integration {
         [TestMethod]
         public async Task TestHttpPutForbidden() {
             using var client = new TestInMemoryDbServerClientFactory<Mocks.MockDataSeeder>().TestClient;
-            var loginResponce = await client.PostAsync("api/Users", new StringContent(JsonConvert.SerializeObject(
+            var loginResponce = await client.PostAsync("/api/Users/login", new StringContent(JsonConvert.SerializeObject(
                 AdminLoginData), Encoding.UTF8, "application/json")); //<- Key moment
             loginResponce.EnsureSuccessStatusCode();
             UserLoginData loginData = JsonConvert.DeserializeObject<UserLoginData>(await loginResponce.Content.ReadAsStringAsync());
@@ -149,7 +149,7 @@ namespace BookStoreApiTests.Integration {
         [TestMethod]
         public async Task TestHttpPutAllowed() {
             using var client = new TestInMemoryDbServerClientFactory<Mocks.MockDataSeeder>().TestClient;
-            var loginResponce = await client.PostAsync("api/Users", new StringContent(JsonConvert.SerializeObject(
+            var loginResponce = await client.PostAsync("/api/Users/login", new StringContent(JsonConvert.SerializeObject(
                 CustomerLoginData), Encoding.UTF8, "application/json"));
             loginResponce.EnsureSuccessStatusCode();
             UserLoginData loginData = JsonConvert.DeserializeObject<UserLoginData>(await loginResponce.Content.ReadAsStringAsync());
@@ -181,7 +181,7 @@ namespace BookStoreApiTests.Integration {
         [TestMethod]
         public async Task TestHttpDeleteForbidden() {
             using var client = new TestInMemoryDbServerClientFactory<Mocks.MockDataSeeder>().TestClient;
-            var loginResponce = await client.PostAsync("api/Users", new StringContent(JsonConvert.SerializeObject(
+            var loginResponce = await client.PostAsync("/api/Users/login", new StringContent(JsonConvert.SerializeObject(
                 CustomerLoginData), Encoding.UTF8, "application/json")); //<- Key moment
             loginResponce.EnsureSuccessStatusCode();
             UserLoginData loginData = JsonConvert.DeserializeObject<UserLoginData>(await loginResponce.Content.ReadAsStringAsync());
@@ -198,7 +198,7 @@ namespace BookStoreApiTests.Integration {
         [TestMethod]
         public async Task TestHttpDeleteAllowed() {
             using var client = new TestInMemoryDbServerClientFactory<Mocks.MockDataSeeder>().TestClient;
-            var loginResponce = await client.PostAsync("api/Users", new StringContent(JsonConvert.SerializeObject(
+            var loginResponce = await client.PostAsync("/api/Users/login", new StringContent(JsonConvert.SerializeObject(
                 AdminLoginData), Encoding.UTF8, "application/json"));
             loginResponce.EnsureSuccessStatusCode();
             UserLoginData loginData = JsonConvert.DeserializeObject<UserLoginData>(await loginResponce.Content.ReadAsStringAsync());

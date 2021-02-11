@@ -1,0 +1,73 @@
+﻿@page "/Register"
+@using System.Globalization;
+@using Microsoft.AspNetCore.Localization;
+@using Microsoft.Extensions.Localization;
+@using BookStoreUI.Data.ViewModels.Authentification;
+@using Contracts;
+@inject IStringLocalizer<BookStoreUI.Services.AuthentificationRepository> localizer;
+@inject IAuthentificationRepository _AuthRepository;
+@inject NavigationManager _NavManager;
+
+
+<div class="card">
+    <h5 class="card-title">@localizer["Register user"]</h5>
+    @if (_IsFailed == true)
+    {
+        <div class="alert alert-danger">
+            <p>@localizer["Something went wrong with registration"]</p>
+        </div>
+    }
+    else if(_IsFailed == false)
+    {
+<div class="alert alert-success">
+    <p>@localizer["User registred succesfully"]</p>
+    <p><a href="/" class="float-right">@localizer["Home"]</a></p>
+</div>
+    }
+    <h6 class="card-subtitle mb-2 text-muted">@localizer["Please insert user details"]</h6>
+    <div class="card-body">
+        <EditForm Model="Model" OnValidSubmit="HandleRegistration">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+            <div class="form-group">
+                <label for="userName">@localizer["Login"]</label>
+                <InputText Id="userName" class="form-control" @bind-Value="Model.UserLogin" />
+                <ValidationMessage For="@(()=>Model.UserLogin)"></ValidationMessage>
+            </div>
+            <div class="form-group">
+                <label for="userEmail">@localizer["User email"]</label>
+                <InputText Id="userEmail" class="form-control" @bind-Value="Model.UserEmail" />
+                <ValidationMessage For="@(()=>Model.UserEmail)"></ValidationMessage>
+            </div>
+            <div class="form-group">
+                <label for="userPassword">@localizer["Password"]</label>
+                <InputText Id="userPassword" type="password" class="form-control" @bind-Value="Model.Password" />
+                <ValidationMessage For="@(()=>Model.Password)"></ValidationMessage>
+            </div>
+            <div class="form-group">
+                <label for="userPasswordConfirm">@localizer["Confirm password"]</label>
+                <InputText Id="userPasswordConfirm" type="password" class="form-control" @bind-Value="Model.PasswordConfirmation" />
+                <ValidationMessage For="@(()=>Model.PasswordConfirmation)"></ValidationMessage>
+            </div>
+            <button type="submit" class="btn btn-primary btn-block">@localizer["Submit"]</button>
+        </EditForm>
+    </div>
+</div>
+
+@code {
+    private RegistrationVM Model = new RegistrationVM();
+    private bool? _IsFailed = null;
+
+    private async Task HandleRegistration()
+    {
+        var answer = await _AuthRepository.Register(Model);
+        if (answer.Succeed)
+        {
+            //_NavManager.NavigateTo("/");
+            _IsFailed = false;
+        }
+        else
+            _IsFailed = true;
+    }
+
+}

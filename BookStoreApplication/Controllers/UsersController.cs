@@ -1,5 +1,6 @@
 ﻿using BookStoreApi.Data.Authentification;
 using BookStoreApi.Data.DTOs;
+using BookStoreApi;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
@@ -28,7 +29,7 @@ namespace BookStoreApi.Controllers {
 
         public UsersController(
             SignInManager<AppUser> signInManager,
-            UserManager<AppUser> userManager, 
+            UserManager<AppUser> userManager,
             IConfiguration configuration,
             ILogger<UsersController> logger) {
             _UserManager = userManager;
@@ -44,6 +45,7 @@ namespace BookStoreApi.Controllers {
         /// <returns></returns>
         [AllowAnonymous]
         [HttpPost]
+        [Route("login")]
         [ProducesResponseType(StatusCodes.Status202Accepted)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -79,12 +81,46 @@ namespace BookStoreApi.Controllers {
                     return StatusCode(StatusCodes.Status401Unauthorized, "Incorrect password");
                 }
             }
-            catch(Exception e) {
+            catch (Exception e) {
                 _Logger.LogError(e, e.Message);
                 return StatusCode(StatusCodes.Status500InternalServerError, "Internal server error");
             }
         }
 
+
+
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(StatusCodes.Status417ExpectationFailed)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [HttpPost]
+        [AllowAnonymous]
+        [Route("register")]
+        public async Task<IActionResult> Register([FromBody] UserRegisterDTO userData) {
+            try {
+                if (userData == null)
+                    return StatusCode(StatusCodes.Status417ExpectationFailed, "user data must be not empty");
+                if (!ModelState.IsValid)
+                    return StatusCode(StatusCodes.Status400BadRequest, ModelState);
+                string location = this.GetControllerActionNames();
+                AppUser appUser = new AppUser() {
+                    UserName = userData.UserLogin,
+                    Email = userData.UserEmail,
+                };
+                var identityResult = await _UserManager.CreateAsync(appUser, userData.Password);
+                if (!identityResult.Succeeded) {
+                    _Logger.LogWarning("Failed to register user", identityResult.Errors.Select(e => $"{location}: {e.Code} - {e.Description}").ToArray());
+                    return this.InternalError(_Logger, "Unable to register the user");
+                }
+                return StatusCode(StatusCodes.Status200OK);
+            }
+            catch (Exception e) {
+                _Logger.LogError(e, e.Message);
+                return StatusCode(StatusCodes.Status500InternalServerError, "Unknown error produced, information transmitted to maintenance team");
+            }
+
+
+        }
         private async Task<string> GenerateBearerToken(AppUser user) {
             string result = string.Empty;
             SecurityKey key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_Configuration.GetValue<string>("Jwt:Key")));
@@ -97,7 +133,7 @@ namespace BookStoreApi.Controllers {
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                 new Claim(ClaimTypes.NameIdentifier, user.Id)
             };
-            claims.AddRange((await _UserManager.GetRolesAsync(user)).Select(x=>new Claim(ClaimTypes.Role, x)));
+            claims.AddRange((await _UserManager.GetRolesAsync(user)).Select(x => new Claim(ClaimTypes.Role, x)));
             var token = new JwtSecurityToken(
                 issuer: issuer,
                 audience: issuer,

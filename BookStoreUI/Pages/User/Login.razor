@@ -1,0 +1,60 @@
+﻿@page "/Login"
+@using Contracts;
+@using Data.Models;
+@using Microsoft.AspNetCore.Localization;
+@using Microsoft.Extensions.Localization;
+@using BookStoreUI.Data.ViewModels.Authentification;
+
+@inject IAuthentificationRepository _AuthRepository;
+@inject NavigationManager _NavManager;
+@inject IStringLocalizer<BookStoreUI.Services.AuthentificationRepository> localizer;
+
+
+<div class="card">
+    <h5 class="card-title">@localizer["Register user"]</h5>
+    @if (Responce != null)
+    {
+        @if (!Responce.Succeed)
+        {
+            <div class="alert alert-danger">
+                <p>@localizer[Responce.Message]</p>
+            </div>
+        }
+        else
+        {
+            <div class="alert alert-success">
+                <p>>@localizer[Responce.Message]</p>
+                <p><a href="/" class="float-right">@localizer["Home"]</a></p>
+            </div>
+        }
+    }
+    <h6 class="card-subtitle mb-2 text-muted">@localizer["Please insert user details"]</h6>
+    <div class="card-body">
+        <EditForm Model="Model" OnValidSubmit="HandleLogin">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+            <div class="form-group">
+                <label for="userName">@localizer["User email"]</label>
+                <InputText Id="userName" class="form-control" @bind-Value="Model.Login" />
+                <ValidationMessage For="@(()=>Model.Login)"></ValidationMessage>
+            </div>
+            <div class="form-group">
+                <label for="userPassword">@localizer["Password"]</label>
+                <InputText Id="userPassword" type="password" class="form-control" @bind-Value="Model.Password" />
+                <ValidationMessage For="@(()=>Model.Password)"></ValidationMessage>
+            </div>
+            <button type="submit" class="btn btn-primary btn-block">@localizer["Submit"]</button>
+        </EditForm>
+    </div>
+</div>
+
+@code {
+    private UserLoginDTO Model = new UserLoginDTO();
+    private RepositoryResponce Responce = null;
+
+    private async Task HandleLogin()
+    {
+        Responce = await _AuthRepository.Login(Model);
+    }
+
+}

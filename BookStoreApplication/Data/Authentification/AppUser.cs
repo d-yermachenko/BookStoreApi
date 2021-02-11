@@ -6,5 +6,9 @@ using System.Threading.Tasks;
 
 namespace BookStoreApi.Data.Authentification {
     public class AppUser : IdentityUser {
+
+        public AppUser() : base() {
+
+        }
     }
 }

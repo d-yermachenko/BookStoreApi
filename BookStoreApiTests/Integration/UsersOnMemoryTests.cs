@@ -35,7 +35,7 @@ namespace BookStoreApiTests.Integration {
         [TestMethod]
         public async Task LoginBadRequest400() {
             var client = new TestInMemoryDbServerClientFactory<Mocks.MockDataSeeder>().TestClient;
-            var response = await client.PostAsync("/api/Users", new StringContent(
+            var response = await client.PostAsync("/api/Users/login", new StringContent(
                 JsonConvert.SerializeObject(new UserLoginDTO() {
                     Login = "barmalei",
                 }
@@ -46,7 +46,7 @@ namespace BookStoreApiTests.Integration {
         [TestMethod]
         public async Task LoginUnauthorized403() {
             var client = new TestInMemoryDbServerClientFactory<Mocks.MockDataSeeder>().TestClient;
-            var response = await client.PostAsync("/api/Users", new StringContent(
+            var response = await client.PostAsync("/api/Users/login", new StringContent(
                 JsonConvert.SerializeObject(new UserLoginDTO() {
                     Login = "admin",
                     Password = "P@ssword111"
@@ -63,7 +63,7 @@ namespace BookStoreApiTests.Integration {
                 Password = "P@ssword128!"
             };
             string serializeContent = JsonConvert.SerializeObject(userData);
-            var response = await client.PostAsync("/api/Users", new StringContent(serializeContent, Encoding.UTF8, "application/json"));
+            var response = await client.PostAsync("/api/Users/login", new StringContent(serializeContent, Encoding.UTF8, "application/json"));
             Assert.AreEqual(HttpStatusCode.Accepted, response.StatusCode);
         }
 

@@ -1,0 +1,21 @@
+﻿@page "/Logout"
+@using Contracts;
+@using Data.Models;
+@using Microsoft.AspNetCore.Localization;
+@using Microsoft.Extensions.Localization;
+@using BookStoreUI.Data.ViewModels.Authentification;
+
+@inject IAuthentificationRepository _AuthRepository;
+@inject NavigationManager _NavManager;
+
+
+@code {
+
+    protected override async Task OnInitializedAsync()
+    {
+
+        await _AuthRepository.Logout();
+        _NavManager.NavigateTo("/");
+        await base.OnInitializedAsync();
+    }
+}
