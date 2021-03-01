@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
 
 namespace BookStoreApi.Data.DTOs {
     public class AuthorDTO {
@@ -55,5 +56,10 @@ namespace BookStoreApi.Data.DTOs {
         /// Biography of the author
         /// </summary>
         public string Bio { get; set; }
+
+        /// <summary>
+        /// List of the books of the author
+        /// </summary>
+        public IList<BookUpsertDTO> Books { get; set; }
     }
 }

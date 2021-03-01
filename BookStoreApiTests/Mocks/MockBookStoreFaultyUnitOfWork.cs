@@ -9,24 +9,21 @@ using System.Threading.Tasks;
 namespace BookStoreApiTests.Mocks {
     public class MockBookStoreFaultyUnitOfWork : IBookStoreUnitOfWorkAsync {
 
-        private readonly IRepositoryAsync<Author> _Authors;
-        private readonly IRepositoryAsync<Book> _Books;
+        private readonly IRepositoryAsync<Author, int> _Authors;
+        private readonly IRepositoryAsync<Book, int> _Books;
         public MockBookStoreFaultyUnitOfWork() {
-            _Authors = new MockRepositoryFaultyAsync<Author>();
-            _Books = new MockRepositoryFaultyAsync<Book>();
+            _Authors = new MockRepositoryFaultyAsync<Author, int>();
+            _Books = new MockRepositoryFaultyAsync<Book, int>();
         }
 
-        public IRepositoryAsync<Author> Authors {
+        public IRepositoryAsync<Author, int> Authors {
             get => _Authors;
         }
 
-        public IRepositoryAsync<Book> Books {
+        public IRepositoryAsync<Book, int> Books {
             get => _Books;
         }
 
-        public void Dispose() {
-            GC.SuppressFinalize(this);
-        }
 
         public Task<bool> SaveData() {
             throw new System.Data.DataException("Imagine that something happened while operating database");

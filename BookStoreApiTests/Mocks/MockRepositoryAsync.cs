@@ -8,7 +8,9 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace BookStoreApiTests.Mocks {
-    public class MockRepositoryAsync<TInstance> : BookStoreApi.Contracts.IRepositoryAsync<TInstance> where TInstance : class {
+    public class MockRepositoryAsync<TInstance, TKey> : BookStoreApi.Contracts.IRepositoryAsync<TInstance, TKey>
+        where TInstance : class
+        where TKey : IComparable<TKey> {
         private readonly ConcurrentDictionary<IComparable, TInstance> _Dataset;
         private readonly Func<TInstance, IComparable> _KeyTaker;
         private readonly object locker = new object();
@@ -30,15 +32,22 @@ namespace BookStoreApiTests.Mocks {
 
         }
 
-        public Task<bool> DeleteAsync(TInstance entity) {
-            return Task.FromResult(_Dataset.TryRemove(_KeyTaker.Invoke(entity), out _));
+        public Task<bool> DeleteAsync(TKey id) {
+            return Task.Run(() => {
+                if (!_Dataset.ContainsKey((IComparable)id))
+                    throw new KeyNotFoundException($"Element of type {typeof(TInstance).Name} with key {id} was not found");
+                return _Dataset.TryRemove((IComparable)id, out _);
+            });
         }
 
-        public Task<TInstance> FindAsync(Expression<Func<TInstance, bool>> predicate, IEnumerable<Expression<Func<TInstance, object>>> includes = null) {
+
+
+
+        public Task<TInstance> FindAsync(TKey id, IEnumerable<Expression<Func<TInstance, object>>> includes = null) {
             return Task.Factory.StartNew(() => {
                 IQueryable<TInstance> instances = _Dataset.Values.AsQueryable();
-                var requestedData = instances.Where(predicate);
-                return requestedData.FirstOrDefault();
+                var requestedData = instances.FirstOrDefault(x => _KeyTaker.Invoke(x).CompareTo(id) == 0);
+                return requestedData;
             });
         }
 
@@ -56,13 +65,13 @@ namespace BookStoreApiTests.Mocks {
         public Task<ICollection<TInstance>> WhereAsync(Expression<Func<TInstance, bool>> filter = null, Func<IQueryable<TInstance>, IOrderedQueryable<TInstance>> order = null, IEnumerable<Expression<Func<TInstance, object>>> includes = null) {
             return Task.Factory.StartNew<ICollection<TInstance>>(() => {
                 IQueryable<TInstance> instances = _Dataset.Values.AsQueryable();
-                if(filter != null)
+                if (filter != null)
                     instances = instances.Where(filter).AsQueryable();
-                if(includes?.Count() > 0) {
+                if (includes?.Count() > 0) {
                     foreach (var include in includes)
                         instances = instances.Include(include);
                 }
-                if(order != null) {
+                if (order != null) {
                     instances = order.Invoke(instances);
                 }
                 return instances.ToList();

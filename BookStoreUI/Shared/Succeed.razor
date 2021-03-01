@@ -1,0 +1,92 @@
+﻿@using System.Threading;
+@implements IDisposable;
+@implements IAsyncDisposable;
+@inject NavigationManager _NavManager;
+
+<div class="alert alert-success">
+    @Title
+    @if (!String.IsNullOrWhiteSpace(AutoReturnUrl) && ShowReturnButton)
+    {
+        <a class="btn btn-primary" @onclick="ReturnToListAsync">
+            <span class="oi oi-media-step-backward"></span>
+        </a>
+    }
+</div>
+
+@code {
+
+    [Parameter]
+    public string Title { get; set; }
+
+    [Parameter]
+    public string AutoReturnUrl { get; set; } = null;
+
+    [Parameter]
+    public TimeSpan? AutoReturnDelay { get; set; } = null;
+
+    [Parameter]
+    public bool ShowReturnButton { get; set; } = true;
+
+    private System.Threading.Timer AutomaticDelayTimer = null;
+
+    protected override Task OnInitializedAsync()
+    {
+        return Task.Run(() => {
+            base.OnInitializedAsync().Wait();
+            if (!String.IsNullOrWhiteSpace(AutoReturnUrl) && AutoReturnDelay != null)
+            {
+                AutomaticDelayTimer = new Timer(callback: (state) =>
+                {
+                    _NavManager.NavigateTo(AutoReturnUrl);
+                }, dueTime : (int)AutoReturnDelay.Value.TotalMilliseconds, period: Timeout.Infinite, state: null);
+
+            }
+
+        });
+    }
+
+    protected async Task ReturnToListAsync() => await Task.Run(()=>_NavManager.NavigateTo(AutoReturnUrl));
+    #region Dispose
+    #region IDisposible
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    protected void Dispose(bool disposing)
+    {
+        if (AutomaticDelayTimer == null)
+            return;
+        if (disposing)
+        {
+            AutomaticDelayTimer.Dispose();
+        }
+        AutomaticDelayTimer = null;
+    }
+
+    #endregion
+
+    #region IAsyncDisposible 
+    protected virtual async ValueTask DisposeAsyncCore()
+    {
+        if(AutomaticDelayTimer as IAsyncDisposable is not null)
+        {
+            await AutomaticDelayTimer.DisposeAsync().ConfigureAwait(false);
+        }
+        AutomaticDelayTimer = null;
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        await DisposeAsyncCore();
+
+        Dispose(disposing: false);
+        GC.SuppressFinalize(this);
+    }
+
+    #endregion
+    #endregion
+}
+
+

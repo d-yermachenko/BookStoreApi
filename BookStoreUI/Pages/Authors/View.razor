@@ -1,0 +1,126 @@
+﻿@page "/authors/view/{IdValue}"
+@inject IAuthorsRepository _repository;
+@inject NavigationManager _navManager;
+@inject IStringLocalizer<BookStoreUI.Services.AuthorsRepository> localizer;
+
+<h3>@localizer["Details about authors"]</h3>
+
+@if (Author.Item1 == null)
+{
+    <div class="alert alert-info">
+        @localizer["Getting author"]
+    </div>
+}
+else
+{
+    @if (Author.Item1 == false)
+    {
+        <div class="alert alert-danger">
+            @localizer["Failed to get authors"]
+        </div>
+    }
+    else
+    {
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title">@localizer["Details about author"]</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col col-4">
+                        <table class="table table-responsive-lg">
+                            <tbody>
+                                <tr>
+                                    <td>@localizer["First name"]</td>
+                                    <td>@Author.Item2.Firstname</td>
+                                </tr>
+                                <tr>
+                                    <td>@localizer["Last name"]</td>
+                                    <td>@Author.Item2.Lastname</td>
+                                </tr>
+                                <tr>
+                                    <td>@localizer["Bio"]</td>
+                                    <td>@Author.Item2.Bio</td>
+                                </tr>
+                            </tbody>
+
+                        </table>
+                    </div>
+                    <div class="col-8">
+                        @if(Author.Item2.Books?.Count == 0)
+                        {
+                            <div class="alert alert-dismissible alert-primary">
+                                @localizer["No books from this author"]
+                            </div>
+                        }
+                        else { 
+                        <div class="card">
+                            <div class="card-header">
+                                <h5>@localizer["Books"]</h5>
+                            </div>
+                            <div class="card-body">
+                                <ul class="list-group list-group-flush">
+                                    @foreach (Book book in Author.Item2.Books)
+                                    {
+                                        <li class="list-group-item"> @book.Title - @book.Year <span class="badge badge-success">$@book.Price</span> </li>
+                                    }
+
+                                </ul>
+                            </div>
+                        </div>
+                        }
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+}
+
+<button @onclick="BackToList" class="btn btn-outline-secondary"><span class="oi oi-media-step-backward"></span></button>
+
+@code {
+    [Parameter]
+    public string IdValue { get; set; }
+
+    private Tuple<bool?, Author> Author = Tuple.Create<bool?, Author>(null, null);
+
+    public Task<Author> GetAuthor(string idValue)
+    {
+        return Task.Factory.StartNew<Author>(() =>
+        {
+            Author result = null;
+            if (int.TryParse(idValue, out int id))
+            {
+                result = _repository.Get(id).Result;
+            }
+            else
+            {
+                var authors = _repository.Get().Result;
+                var correspondentAuthors = authors.Where(x => x.Firstname.Contains(idValue) || x.Lastname.Contains(idValue));
+                if (correspondentAuthors.Count() > 0)
+                    result = correspondentAuthors.First();
+            }
+
+            return result;
+        });
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            Author = Tuple.Create<bool?, Author>(true, await GetAuthor(IdValue));
+        }
+        catch (AggregateException)
+        {
+            Author = Tuple.Create<bool?, Author>(false, null);
+        }
+    }
+
+    private Task BackToList(object sender)
+    {
+        return Task.Run(() => _navManager.NavigateTo("/authors/"));
+    }
+
+}

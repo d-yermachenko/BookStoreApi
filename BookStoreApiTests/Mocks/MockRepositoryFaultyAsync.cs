@@ -6,25 +6,28 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace BookStoreApiTests.Mocks {
-    public class MockRepositoryFaultyAsync<TEntity> : BookStoreApi.Contracts.IRepositoryAsync<TEntity> where TEntity: class {
-        public async Task<bool> CreateAsync(TEntity entity) {
-            return await Task.FromResult(false);
+    public class MockRepositoryFaultyAsync<TEntity, TKey> : BookStoreApi.Contracts.IRepositoryAsync<TEntity, TKey> 
+        where TEntity: class
+        where TKey: IComparable<TKey>{
+        public Task<bool> CreateAsync(TEntity entity) {
+            throw new InvalidOperationException("Due the nature of repository, create operation failed");
         }
 
-        public async Task<bool> DeleteAsync(TEntity entity) {
-            return await Task.FromResult(false);
+        public Task<bool> DeleteAsync(TKey entity) {
+            throw new InvalidOperationException("Due the nature of repository, delete operation failed");
         }
 
-        public Task<TEntity> FindAsync(Expression<Func<TEntity, bool>> filter, IEnumerable<Expression<Func<TEntity, object>>> includes = null) {
-            throw new InvalidOperationException("Due the nature of repository, operation failed");
+        public Task<TEntity> FindAsync(TKey id, IEnumerable<Expression<Func<TEntity, object>>> includes = null) {
+            throw new InvalidOperationException("Due the nature of repository, find operation failed");
         }
 
-        public async Task<bool> UpdateAsync(TEntity entity) {
-            return await Task.FromResult(false);
+
+        public Task<bool> UpdateAsync(TEntity entity) {
+            throw new InvalidOperationException("Due the nature of repository, update operation failed");
         }
 
         public Task<ICollection<TEntity>> WhereAsync(Expression<Func<TEntity, bool>> filter = null, Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>> order = null, IEnumerable<Expression<Func<TEntity, object>>> includes = null) {
-            throw new InvalidOperationException("Due the nature of repository, operation failed");
+            throw new InvalidOperationException("Due the nature of repository, read all failed");
         }
     }
 }

@@ -11,6 +11,10 @@ namespace BookStoreUI.Data {
 
         public const string LoginRelativeUrl = "/api/Users/login";
 
+        public const string Authors = "/api/Authors/";
+
+        public const string Books = "/api/Books/";
+
         public const string TokenStorageKey = "";
     }
 }

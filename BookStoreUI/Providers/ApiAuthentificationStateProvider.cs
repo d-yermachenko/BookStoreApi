@@ -64,7 +64,7 @@ namespace BookStoreUI.Providers {
             return new AuthenticationState(new ClaimsPrincipal());
         }
 
-        private IList<Claim> GetClaims(JwtSecurityToken tokenContent) {
+        private static IList<Claim>  GetClaims(JwtSecurityToken tokenContent) {
             var result = tokenContent.Claims.ToList();
             result.Add(new Claim(ClaimTypes.Name, tokenContent.Subject));
             return result;

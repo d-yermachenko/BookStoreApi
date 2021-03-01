@@ -37,6 +37,7 @@ namespace BookStoreUI {
             services.AddBlazoredLocalStorage();
             services.AddTransient<IHttpRequestMessageProviderAsync, HttpRequestMessageProvider>();
             services.AddTransient<IAuthentificationRepository, AuthentificationRepository>();
+            services.AddTransient<IAuthorsRepository, AuthorsRepository>();
             services.AddScoped<JwtSecurityTokenHandler>();
             services.AddScoped<ApiAuthentificationStateProvider>();
             services.AddScoped<AuthenticationStateProvider>(p => p.GetRequiredService<ApiAuthentificationStateProvider>());

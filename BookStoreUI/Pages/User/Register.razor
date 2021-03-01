@@ -3,7 +3,6 @@
 @using Microsoft.AspNetCore.Localization;
 @using Microsoft.Extensions.Localization;
 @using BookStoreUI.Data.ViewModels.Authentification;
-@using Contracts;
 @inject IStringLocalizer<BookStoreUI.Services.AuthentificationRepository> localizer;
 @inject IAuthentificationRepository _AuthRepository;
 @inject NavigationManager _NavManager;
@@ -13,16 +12,11 @@
     <h5 class="card-title">@localizer["Register user"]</h5>
     @if (_IsFailed == true)
     {
-        <div class="alert alert-danger">
-            <p>@localizer["Something went wrong with registration"]</p>
-        </div>
+        <Fail Title="@localizer["Something went wrong with registration"]"/>
     }
     else if(_IsFailed == false)
     {
-<div class="alert alert-success">
-    <p>@localizer["User registred succesfully"]</p>
-    <p><a href="/" class="float-right">@localizer["Home"]</a></p>
-</div>
+        <Succeed AutoReturnUrl="/" AutoReturnDelay=TimeSpan.FromMilliseconds(1500) Title="@localizer["User created"]"/>
     }
     <h6 class="card-subtitle mb-2 text-muted">@localizer["Please insert user details"]</h6>
     <div class="card-body">
@@ -63,7 +57,6 @@
         var answer = await _AuthRepository.Register(Model);
         if (answer.Succeed)
         {
-            //_NavManager.NavigateTo("/");
             _IsFailed = false;
         }
         else

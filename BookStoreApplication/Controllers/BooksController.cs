@@ -2,6 +2,8 @@
 using BookStoreApi.Contracts;
 using BookStoreApi.Data;
 using BookStoreApi.Data.DTOs;
+using BookStoreApi.Data.ModelBinders;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
@@ -61,6 +63,7 @@ namespace BookStoreApi.Controllers {
         /// <param name="book">New book object</param>
         /// <returns></returns>
         [HttpPost]
+        [Authorize(Roles="Administrator")]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -128,7 +131,7 @@ namespace BookStoreApi.Controllers {
         public async Task<IActionResult> GetBook(int id) {
             _Logger.LogTrace($"Getting author #{id}");
             try {
-                var book = await _BookStore.Books.FindAsync(filter: b=>b.Id == id,
+                var book = await _BookStore.Books.FindAsync(id: id,
                     includes: new Expression<Func<Book, object>>[] { incl => incl.Authors });
                 if (book == null)
                     return BookNotFound($"Book with id {id} not found in database");
@@ -149,11 +152,14 @@ namespace BookStoreApi.Controllers {
         /// <param name="book">Updated book object</param>
         /// <returns>Updated book</returns>
         [HttpPut("{bookId}")]
+        [Authorize(Roles = "Administrator")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> Update(int bookId, [FromBody]BookUpsertDTO book) {
+        public async Task<IActionResult> Update(int bookId, [ModelBinder(typeof(BookModelBinder))] BookUpsertDTO book) {
             _Logger.LogInformation("Attempting to update book");
             try {
                 if (book == null)
@@ -162,7 +168,7 @@ namespace BookStoreApi.Controllers {
                     return BookBadRequest($"Book id you provided ({bookId}) is inferior of 0 and not exists in database");
                 if (!ModelState.IsValid)
                     return BookBadRequest("Book data not passed the validation", ModelState);
-                var srcBook = await _BookStore.Books.FindAsync(x => x.Id == bookId);
+                var srcBook = await _BookStore.Books.FindAsync(id: bookId);
                 if (srcBook == null)
                     return BookNotFound($"Book id you provided ({bookId}) not found and can not be updated");
 
@@ -182,7 +188,10 @@ namespace BookStoreApi.Controllers {
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Administrator")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> Delete(int id) {
@@ -190,10 +199,7 @@ namespace BookStoreApi.Controllers {
             try {
                 if (id <= 0)
                     return BadRequest($"Id you provided({id}) is loss of 0 and incorrect");
-                var srcElement = await _BookStore.Books.FindAsync(x => x.Id == id);
-                if (srcElement == null)
-                    return BookNotFound($"Cant find the book with this id({id})");
-                bool success = await _BookStore.Books.DeleteAsync(srcElement);
+                bool success = await _BookStore.Books.DeleteAsync(id);
                 success &= await _BookStore.SaveData();
                 if (success) {
                     _Logger.LogTrace($"Successuly deleted book with id {id}.");
@@ -202,6 +208,9 @@ namespace BookStoreApi.Controllers {
                 else
                     return InternalError($"Filed to delete the book with id {id}.");
 
+            }
+            catch (KeyNotFoundException e) {
+                return NotFound(e.Message);
             }
             catch (Exception e) {
                 return InternalError($"Failed to remove book # {id}", e);

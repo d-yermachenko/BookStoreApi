@@ -1,0 +1,70 @@
+﻿@page "/authors/create"
+@inject IAuthorsRepository _repository;
+@inject NavigationManager _navManager;
+@inject IStringLocalizer<BookStoreUI.Services.AuthorsRepository> localizer;
+
+<h3>@localizer["Create"]</h3>
+@if (RepositoryResponce?.Succeed == true)
+{
+    <Succeed Title="@localizer["Author created succesfully"]" AutoReturnUrl="/authors/" AutoReturnDelay=@TimeSpan.FromMilliseconds(1200)></Succeed>
+}
+else
+{
+    <EditForm OnValidSubmit="SaveChanges" Model="Model">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+        <div class="form-group">
+            <label for="firstName">@localizer["First name"]</label>
+            <InputText Id="firstName" class="form-control" @bind-Value="Model.Firstname" />
+            <ValidationMessage For="@(() => Model.Firstname)"></ValidationMessage>
+        </div>
+        <div class="form-group">
+            <label for="lastName">@localizer["Last name"]</label>
+            <InputText Id="lastName" class="form-control" @bind-Value="Model.Lastname" />
+            <ValidationMessage For="@(() => Model.Lastname)"></ValidationMessage>
+        </div>
+        <div class="form-group">
+            <label for="userName">@localizer["Bio"]</label>
+            <InputTextArea Id="userName" class="form-control" @bind-Value="Model.Bio" />
+            <ValidationMessage For="@(() => Model.Bio)"></ValidationMessage>
+        </div>
+        <button class="btn btn-primary" type="submit">
+            <span class="oi oi-pencil"></span> @localizer["Create author"]
+        </button>
+
+    </EditForm>
+
+}
+@if (RepositoryResponce?.Succeed == false)
+{
+    <Fail Title="@localizer[RepositoryResponce.Message]"></Fail>
+}
+<button @onclick="BackToList" class="btn btn-outline-secondary"><span class="oi oi-media-step-backward"></span></button>
+
+
+@if (Model == null)
+{
+    <Loading Title="@localizer["Loading author"]"></Loading>
+}
+
+@code {
+
+    private Author Model { get; set; } = new Author();
+    private Data.Models.RepositoryResponce RepositoryResponce { get; set; }
+    private bool? ModelObtainedSuccesfully { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+    }
+
+    protected async Task SaveChanges()
+    {
+        RepositoryResponce = await _repository.Create(Model);
+    }
+
+    private Task BackToList(object sender)
+    {
+        return Task.Run(() => _navManager.NavigateTo("/authors/"));
+    }
+}

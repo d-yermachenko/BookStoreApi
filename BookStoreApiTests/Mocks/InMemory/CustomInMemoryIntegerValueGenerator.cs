@@ -1,5 +1,4 @@
-﻿using BookStoreApi.Data;
-using Microsoft.EntityFrameworkCore.ChangeTracking;
+﻿using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.InMemory.ValueGeneration.Internal;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.ValueGeneration;
@@ -37,27 +36,16 @@ namespace BookStoreApiTests.Mocks.InMemory {
         public override TKey Next(EntityEntry entry) {
             if ((_current?.CompareTo(default(TKey))??0) == 0) {
                 var context = entry.Context.Set<TEntity>().Local.AsEnumerable();
-                _current = context.Max(
-                    x => _KeyTaker.Invoke(x));
+                if (context.Any())
+                    _current = context.Max(
+                        x => _KeyTaker.Invoke(x));
+                else
+                    _current = _ValueIncrementor(default);
             }
             lock (locker) {
                 _current = _ValueIncrementor.Invoke(_current);
             }
             return _current;
         }
-    }
-
-    internal class AuthorInMemoryValueGenerator : CustomInMemoryValueGenerator<Author, int> {
-        public AuthorInMemoryValueGenerator() : base(x => x.Id, x =>x+1) {
-
-        }
-
-    }
-
-    internal class BookInMemoryValueGenerator : CustomInMemoryValueGenerator<Book, int> {
-        public BookInMemoryValueGenerator() : base(x => x.Id, x => x + 1) {
-
-        }
-
     }
 }

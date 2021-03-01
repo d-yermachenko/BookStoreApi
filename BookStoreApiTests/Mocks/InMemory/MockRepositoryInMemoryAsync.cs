@@ -8,24 +8,27 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace BookStoreApiTests.Mocks.InMemory {
-    public class MockRepositoryInMemoryAsync<TInstance> : BookStoreApi.Contracts.IRepositoryAsync<TInstance> where TInstance : class {
+    public class MockRepositoryInMemoryAsync<TInstance, TKey> : BookStoreApi.Contracts.IRepositoryAsync<TInstance, TKey> 
+        where TInstance : class
+        where TKey: IComparable<TKey>{
         private readonly DbSet<TInstance> _Dataset;
-        private readonly Func<TInstance, IComparable> _KeyTaker;
-        private readonly object locker = new object();
+        private readonly Func<TInstance, TKey> _KeyGetter;
 
-        public MockRepositoryInMemoryAsync(DbSet<TInstance> inMemoryDbSet, Expression<Func<TInstance, IComparable>> idAccessor) {
+        public MockRepositoryInMemoryAsync(DbSet<TInstance> inMemoryDbSet, Func<TInstance, TKey> keyGetter ) {
             _Dataset = inMemoryDbSet;
-            _KeyTaker = idAccessor.Compile();
-
+            _KeyGetter = keyGetter;
         }
 
         public async Task<bool> CreateAsync(TInstance entity) {
             return (await _Dataset.AddAsync(entity)).State == EntityState.Added;
         }
 
-        public async Task<bool> DeleteAsync(TInstance entity) {
+        public async Task<bool> DeleteAsync(TKey id) {
             bool result ;
             try {
+                var entity = await _Dataset.FindAsync(id);
+                if (entity == null)
+                    throw new KeyNotFoundException($"Element of type {typeof(TInstance).Name} with key {id} was not found");
                 _Dataset.Remove(entity);
                 result = await Task.FromResult(true);
             }
@@ -35,10 +38,10 @@ namespace BookStoreApiTests.Mocks.InMemory {
             return result;
         }
 
-        public async Task<TInstance> FindAsync(Expression<Func<TInstance, bool>> predicate, IEnumerable<Expression<Func<TInstance, object>>> includes = null) {
+        public async Task<TInstance> FindAsync(TKey id, IEnumerable<Expression<Func<TInstance, object>>> includes = null) {
             return await Task.Run(() => {
                 IQueryable<TInstance> query = _Dataset.Local.AsQueryable();
-                return query.FirstOrDefault(predicate);
+                return query.FirstOrDefault(x=>_KeyGetter.Invoke(x).CompareTo(id) == 0);
             });
             
         }

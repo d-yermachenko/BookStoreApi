@@ -112,6 +112,11 @@ namespace BookStoreApi.Controllers {
                     _Logger.LogWarning("Failed to register user", identityResult.Errors.Select(e => $"{location}: {e.Code} - {e.Description}").ToArray());
                     return this.InternalError(_Logger, "Unable to register the user");
                 }
+                identityResult = await _UserManager.AddToRoleAsync(appUser, "Customer");
+                if (!identityResult.Succeeded) {
+                    _Logger.LogWarning("Failed to add user to default role", identityResult.Errors.Select(e => $"{location}: {e.Code} - {e.Description}").ToArray());
+                    return this.InternalError(_Logger, "Unable to assign the user to customers");
+                }
                 return StatusCode(StatusCodes.Status200OK);
             }
             catch (Exception e) {

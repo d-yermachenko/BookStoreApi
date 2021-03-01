@@ -1,0 +1,64 @@
+﻿@page "/authors/"
+
+
+@inject IStringLocalizer<BookStoreUI.Services.AuthorsRepository> localizer;
+@inject IAuthorsRepository _authors;
+
+<h3>@localizer["Authors"]</h3>
+@if (Model == null)
+{
+    <Loading Title="@localizer["Preparing data..."]"/>
+}
+else if(Model?.Count > 0)
+{
+    
+    <a href="authors/create/" class="btn btn-primary">
+        <span class="oi oi-plus"></span> @localizer["Create author"]
+    </a>
+    <table class="table table-responsive table-responsive-lg">
+        <thead>
+            <tr>
+                <td>First name</td>
+                <td>Last name</td>
+                <td>Action</td>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (Author author in Model)
+            {
+                <tr>
+                    <td>@author.Firstname</td>
+                    <td>@author.Lastname</td>
+                    <td>
+                        <a class="btn btn-primary" href="/authors/view/@author.Id">
+                            <span class="oi oi-book">View</span>
+                        </a>
+                        <a class="btn btn-warning" href="/authors/edit/@author.Id">
+                            <span class="oi oi-pencil">Edit</span>
+                        </a>
+                        <a class="btn btn-danger"  href="/authors/delete/@author.Id">
+                            <span class="oi oi-trash">Delete</span>
+                        </a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <Loading Title="@localizer["There is no authors in data store, please create one or few"]"></Loading>
+}
+
+
+
+
+@code {
+
+    IList<Author> Model;
+
+    protected async override Task OnInitializedAsync()
+    {
+        Model = (await _authors.Get()).ToList();
+    }
+}

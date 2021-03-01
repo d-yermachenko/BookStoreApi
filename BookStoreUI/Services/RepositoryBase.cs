@@ -10,7 +10,7 @@ using BookStoreUI.Data.Models;
 using BookStoreUI.Contracts;
 
 namespace BookStoreUI.Services {
-    public abstract class RepositoryBase<TEntity, TKey> : Contracts.IRepository<TEntity, TKey> where TEntity : class
+    public abstract class RepositoryBase<TEntity, TKey> : IRepository<TEntity, TKey> where TEntity : class
         where TKey : IComparable<TKey> {
 
         private readonly string _BaseUrl;

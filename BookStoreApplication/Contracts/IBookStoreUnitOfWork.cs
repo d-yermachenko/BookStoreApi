@@ -5,9 +5,9 @@ using System.Threading.Tasks;
 
 namespace BookStoreApi.Contracts {
     public interface IBookStoreUnitOfWorkAsync  {
-        IRepositoryAsync<Data.Author> Authors { get; }
+        IRepositoryAsync<Data.Author, int> Authors { get; }
 
-        IRepositoryAsync<Data.Book> Books { get; }
+        IRepositoryAsync<Data.Book, int> Books { get; }
 
         public Task<bool> SaveData();
     }

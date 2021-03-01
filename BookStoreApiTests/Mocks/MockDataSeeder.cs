@@ -1,6 +1,7 @@
 ﻿using BookStoreApi.Contracts;
 using BookStoreApi.Data;
 using BookStoreApi.Data.Authentification;
+using BookStoreApi.Data.DTOs;
 using Microsoft.AspNetCore.Identity;
 using System;
 using System.Collections.Generic;
@@ -79,25 +80,29 @@ namespace BookStoreApiTests.Mocks {
             await _BookStore.Books.CreateAsync(mondayStartsSaturday);
             await _BookStore.Books.CreateAsync(hardToBeTheGod);
             await _BookStore.Books.CreateAsync(theGodsThemselves);
+            if (!await _BookStore.SaveData())
+                throw new OperationCanceledException("Failed to seed all data in the database");
         }
 
         private async static Task SeedUsers(UserManager<AppUser> userManager) {
             if (await userManager.FindByEmailAsync("admin@bookstore.com") == null) {
+                var loginData = AdminLogin;
                 var user = new AppUser {
-                    UserName = "admin",
+                    UserName = loginData.Login,
                     Email = "admin@bookstore.com"
                 };
-                var result = await userManager.CreateAsync(user, "P@ssword128!");
+                var result = await userManager.CreateAsync(user, loginData.Password);
                 if (result.Succeeded) {
                     await userManager.AddToRoleAsync(user, "Administrator");
                 }
             }
             if (await userManager.FindByEmailAsync("customer1@gmail.com") == null) {
+                var loginData = Customer1Login;
                 var user = new AppUser {
-                    UserName = "customer1",
+                    UserName = loginData.Login,
                     Email = "customer1@gmail.com"
                 };
-                var result = await userManager.CreateAsync(user, "P@ssword2");
+                var result = await userManager.CreateAsync(user, loginData.Password);
                 if (result.Succeeded) {
                     await userManager.AddToRoleAsync(user, "Customer");
                 }
@@ -135,5 +140,18 @@ namespace BookStoreApiTests.Mocks {
             await SeedUsers(_UserManager);
             await SeedBooksAndAuthors();
         }
+
+        public static UserLoginDTO AdminLogin => new UserLoginDTO() {
+            Login = "admin",
+            Password = "P@ssword128!"
+        };
+
+        public static UserLoginDTO Customer1Login => new UserLoginDTO() {
+            Login = "customer1",
+            Password = "P@ssword2"
+        };
+
+
+
     }
 }

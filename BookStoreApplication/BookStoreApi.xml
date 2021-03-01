@@ -4,12 +4,6 @@
         <name>BookStoreApi</name>
     </assembly>
     <members>
-        <member name="T:BookStoreApi.Code.AppInMemoryDataSeeder">
-            <summary>
-            
-            </summary>
-            <deprecated/>
-        </member>
         <member name="T:BookStoreApi.Controllers.AuthorsController">
             <summary>
             Endpoint used to interact with authors in the Book store database.
@@ -112,6 +106,11 @@
         <member name="P:BookStoreApi.Data.DTOs.AuthorUpsertDTO.Bio">
             <summary>
             Biography of the author
+            </summary>
+        </member>
+        <member name="P:BookStoreApi.Data.DTOs.AuthorUpsertDTO.Books">
+            <summary>
+            List of the books of the author
             </summary>
         </member>
     </members>

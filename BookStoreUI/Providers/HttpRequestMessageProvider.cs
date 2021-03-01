@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
+using System.Net.Http.Headers;
 
 namespace BookStoreUI.Services {
     public class HttpRequestMessageProvider : IHttpRequestMessageProviderAsync {
@@ -21,8 +22,7 @@ namespace BookStoreUI.Services {
             if (_LocalStorage != null) {
                 string token = await _LocalStorage.GetItemAsStringAsync(ConventionalKeys.TokenStorageKey);
                 if (!String.IsNullOrWhiteSpace(token))
-
-                    message.Headers.Add("Bearer", token);
+                    message.Headers.Authorization = new AuthenticationHeaderValue("bearer", token);
             }
             return message;
         }

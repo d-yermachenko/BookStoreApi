@@ -31,6 +31,6 @@ namespace BookStoreApi.Data.DTOs {
         public string Image { get; set; }
         public decimal? Price { get; set; }
 
-        public virtual ICollection<AuthorDTO> Authors { get; set; }
+        public virtual IList<AuthorUpsertDTO> Authors { get; set; }
     }
 }

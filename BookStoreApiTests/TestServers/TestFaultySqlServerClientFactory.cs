@@ -19,13 +19,16 @@ using BookStoreApi.Data;
 using BookStoreApiTests.Mocks.InMemory;
 
 namespace BookStoreApiTests.TestServers {
-    public class TestFaultySqlServerClientFactory : ITestClientFactory
+    public class TestFaultySqlServerClientFactory : TestserverClientFactory, ITestClientFactoryAsync
          {
 
-        private readonly TestServer _server;
-        private readonly HttpClient _client;
-        public TestFaultySqlServerClientFactory() {
-            _server = new TestServer(new WebHostBuilder()
+        public TestFaultySqlServerClientFactory() : base(){
+  
+        }
+
+
+        protected override TestServer CreateServer() {
+            return new TestServer(new WebHostBuilder()
                                      .UseStartup<BookStoreApplication.Startup>()
                                      .UseConfiguration(ConfigurationProvider.BuildConfiguration())
                                      .ConfigureTestServices((services) => {
@@ -57,12 +60,6 @@ namespace BookStoreApiTests.TestServers {
                                              options.SerializerSettings.MaxDepth = 2;
                                          });
                                      }));
-            _client = _server.CreateClient();
-        }
-
-
-        public HttpClient TestClient {
-            get => _client;
         }
     }
 }

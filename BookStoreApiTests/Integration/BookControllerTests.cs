@@ -12,7 +12,8 @@ using System.Net.Http;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
-
+using System.Net.Mime;
+using BookStoreApi.Code;
 
 namespace BookStoreApiTests.Integration {
     [TestClass]
@@ -42,15 +43,15 @@ namespace BookStoreApiTests.Integration {
         #region List
         [TestMethod]
         public async Task GetAll404NotFound() {
-            var provider = new TestEmptyClientFactory();
-            using var client = provider.TestClient;
+            var provider = new TestInMemoryAuthentificatedDbServerClientFactory<AppDataSeeder>();
+            using var client = await provider.GetTestClientAsync();
             var response = await client.GetAsync("/api/Books");
             Assert.AreEqual(System.Net.HttpStatusCode.NotFound, response.StatusCode);
         }
 
         [TestMethod]
         public async Task GetAll200Ok() {
-            using var client = new TestFilledClientFactory().TestClient;
+            using var client = await new TestInMemoryAuthentificatedDbServerClientFactory<Mocks.MockDataSeeder>().GetTestClientAsync();
             var response = await client.GetAsync("/api/Books");
             response.EnsureSuccessStatusCode();
             var responseString = await response.Content.ReadAsStringAsync();
@@ -61,7 +62,7 @@ namespace BookStoreApiTests.Integration {
 
         [TestMethod]
         public async Task GetAll500InternalServerError() {
-            using var client = new TestFaultyClientFactory().TestClient;
+            using var client = await new TestFaultyClientFactory<BookStoreApi.Code.AppDataSeeder>().GetTestClientAsync();
             var response = await client.GetAsync("/api/Books");
             var responseString = await response.Content.ReadAsStringAsync();
             // Assert
@@ -74,7 +75,7 @@ namespace BookStoreApiTests.Integration {
         #region Get
         [TestMethod]
         public async Task GetOne200Ok() {
-            using var client = new TestFilledClientFactory().TestClient;
+            using var client = await new TestInMemoryAuthentificatedDbServerClientFactory<Mocks.MockDataSeeder>().GetTestClientAsync();
             var response = await client.GetAsync("api/Authors/1");
             response.EnsureSuccessStatusCode();
             var responseString = await response.Content.ReadAsStringAsync();
@@ -85,14 +86,14 @@ namespace BookStoreApiTests.Integration {
 
         [TestMethod]
         public async Task GetOne404NotFound() {
-            using var client = new TestEmptyClientFactory().TestClient;
+            using var client = await new TestInMemoryAuthentificatedDbServerClientFactory<AppDataSeeder>().GetTestClientAsync();
             var response = await client.GetAsync("api/Authors/8");
             Assert.AreEqual(System.Net.HttpStatusCode.NotFound, response.StatusCode);
         }
 
         [TestMethod]
         public async Task GetOne500InternalServerError() {
-            using var client = new TestFaultyClientFactory().TestClient;
+            using var client = await new TestFaultyClientFactory<BookStoreApi.Code.AppDataSeeder>().GetTestClientAsync();
             var response = await client.GetAsync("api/Authors/8");
             Assert.AreEqual(System.Net.HttpStatusCode.InternalServerError, response.StatusCode);
         }
@@ -101,26 +102,32 @@ namespace BookStoreApiTests.Integration {
         #region Post
         [TestMethod]
         public async Task Create201Created() {
-            using var client = new TestFilledClientFactory().TestClient;
-            var exampleDTO = GetCreateExampleDTO(); ;
-            var postResponse = await client.PostAsync("/api/Books", new StringContent(JsonConvert.SerializeObject(exampleDTO), Encoding.UTF8, "application/json"));
+            using var clientFactory = new TestInMemoryAuthentificatedDbServerClientFactory<Mocks.MockDataSeeder>(()=>Mocks.MockDataSeeder.AdminLogin);
+            var exampleDTO = GetCreateExampleDTO();
+            var content = new StringContent(JsonConvert.SerializeObject(exampleDTO), Encoding.UTF8, MediaTypeNames.Application.Json);
+            var client = await clientFactory.GetTestClientAsync();
+            var postResponse = await client.PostAsync("/api/Books", content);
             Assert.AreEqual(HttpStatusCode.Created, postResponse.StatusCode);
         }
 
         [TestMethod]
         public async Task Create400BadRequest() {
-            using var client = new TestFilledClientFactory().TestClient;
+            using var clientFactory = new TestInMemoryAuthentificatedDbServerClientFactory<Mocks.MockDataSeeder>(() => Mocks.MockDataSeeder.AdminLogin);
             var exampleDTO = GetCreateExampleDTO();
             exampleDTO.Title = default;
-            var postResponse = await client.PostAsync("/api/Books", new StringContent(JsonConvert.SerializeObject(exampleDTO), Encoding.UTF8, "application/json"));
+            var content = new StringContent(JsonConvert.SerializeObject(exampleDTO), Encoding.UTF8, MediaTypeNames.Application.Json);
+            var client = await clientFactory.GetTestClientAsync();
+            var postResponse = await client.PostAsync("/api/Books", content);
             Assert.AreEqual(System.Net.HttpStatusCode.BadRequest, postResponse.StatusCode);
         }
 
         [TestMethod]
         public async Task Create500InternalServerError() {
-            using var client = new TestFaultyClientFactory().TestClient;
+            using var clientFactory = new TestFaultyClientFactory<BookStoreApi.Code.AppDataSeeder>();
             var exampleDTO = GetCreateExampleDTO();
-            var postResponse = await client.PostAsync("/api/Books", new StringContent(JsonConvert.SerializeObject(exampleDTO), Encoding.UTF8, "application/json"));
+            var content = new StringContent(JsonConvert.SerializeObject(exampleDTO), Encoding.UTF8, MediaTypeNames.Application.Json);
+            var client = await clientFactory.GetTestClientAsync((client)=>AuthorizeMethods.AutorizeAsync(()=> AppDataSeeder.AdminDto, client));
+            var postResponse = await client.PostAsync("/api/Books", content);
             Assert.AreEqual(System.Net.HttpStatusCode.InternalServerError, postResponse.StatusCode);
         }
 
@@ -129,35 +136,43 @@ namespace BookStoreApiTests.Integration {
         #region Put
         [TestMethod]
         public async Task Update201Created() {
-            using var client = new TestFilledClientFactory().TestClient;
-            var exampleDTO = GetUpdateExampleDTO(); ;
-            var postResponse = await client.PutAsync($"/api/Books/{exampleDTO.Id}", new StringContent(JsonConvert.SerializeObject(exampleDTO), Encoding.UTF8, "application/json"));
+            using var clientFactory = new TestInMemoryAuthentificatedDbServerClientFactory<Mocks.MockDataSeeder>(() => Mocks.MockDataSeeder.AdminLogin); ;
+            var exampleDTO = GetUpdateExampleDTO();
+            var content = new StringContent(JsonConvert.SerializeObject(exampleDTO), Encoding.UTF8, MediaTypeNames.Application.Json);
+            var client = await clientFactory.GetTestClientAsync();
+            var postResponse = await client.PutAsync($"/api/Books/{exampleDTO.Id}", content);
             Assert.AreEqual(HttpStatusCode.OK, postResponse.StatusCode);
         }
 
         [TestMethod]
         public async Task Update400BadRequest() {
-            using var client = new TestFilledClientFactory().TestClient;
+            using var clientFactory = new TestInMemoryAuthentificatedDbServerClientFactory<Mocks.MockDataSeeder>(() => Mocks.MockDataSeeder.AdminLogin); ;
             var exampleDTO = GetUpdateExampleDTO();
             exampleDTO.Title = default;
-            var postResponse = await client.PutAsync($"/api/Books/{exampleDTO.Id}", new StringContent(JsonConvert.SerializeObject(exampleDTO), Encoding.UTF8, "application/json"));
+            var content = new StringContent(JsonConvert.SerializeObject(exampleDTO), Encoding.UTF8, MediaTypeNames.Application.Json);
+            var client = await clientFactory.GetTestClientAsync();
+            var postResponse = await client.PutAsync($"/api/Books/{exampleDTO.Id}", new StringContent(JsonConvert.SerializeObject(exampleDTO), Encoding.UTF8, MediaTypeNames.Application.Json));
             Assert.AreEqual(System.Net.HttpStatusCode.BadRequest, postResponse.StatusCode);
         }
 
         [TestMethod]
         public async Task Update404NotFound() {
-            using var client = new TestFilledClientFactory().TestClient;
+            using var clientFactory = new TestInMemoryAuthentificatedDbServerClientFactory<Mocks.MockDataSeeder>(() => Mocks.MockDataSeeder.AdminLogin); ;
             var exampleDTO = GetUpdateExampleDTO();
             exampleDTO.Id = 48;
-            var postResponse = await client.PutAsync($"/api/Books/{exampleDTO.Id}", new StringContent(JsonConvert.SerializeObject(exampleDTO), Encoding.UTF8, "application/json"));
+            var content = new StringContent(JsonConvert.SerializeObject(exampleDTO), Encoding.UTF8, MediaTypeNames.Application.Json);
+            var client = await clientFactory.GetTestClientAsync();
+            var postResponse = await client.PutAsync($"/api/Books/{exampleDTO.Id}", content);
             Assert.AreEqual(System.Net.HttpStatusCode.NotFound, postResponse.StatusCode);
         }
 
         [TestMethod]
         public async Task Update500InternalServerError() {
-            using var client = new TestFaultyClientFactory().TestClient;
+            using var clientFactory = new TestFaultyClientFactory<AppDataSeeder>();
             var exampleDTO = GetUpdateExampleDTO();
-            var postResponse = await client.PutAsync($"/api/Books/{exampleDTO.Id}", new StringContent(JsonConvert.SerializeObject(exampleDTO), Encoding.UTF8, "application/json"));
+            var content = new StringContent(JsonConvert.SerializeObject(exampleDTO), Encoding.UTF8, MediaTypeNames.Application.Json);
+            var client = await clientFactory.GetTestClientAsync((client)=>AuthorizeMethods.AutorizeAsync(()=> AppDataSeeder.AdminDto, client));
+            var postResponse = await client.PutAsync($"/api/Books/{exampleDTO.Id}", content);
             Assert.AreEqual(System.Net.HttpStatusCode.InternalServerError, postResponse.StatusCode);
         }
 
@@ -166,23 +181,26 @@ namespace BookStoreApiTests.Integration {
         #region Delete
         [TestMethod]
         public async Task Delete204NoContent() {
-            using var client = new TestFilledClientFactory().TestClient;
-            var exampleDTO = GetUpdateExampleDTO(); ;
+            using var clientFactory = new TestInMemoryAuthentificatedDbServerClientFactory<Mocks.MockDataSeeder>(()=>Mocks.MockDataSeeder.AdminLogin);
+            var exampleDTO = GetUpdateExampleDTO();
+            var client = await clientFactory.GetTestClientAsync();
             var postResponse = await client.DeleteAsync($"/api/Books/{exampleDTO.Id}");
             Assert.AreEqual(HttpStatusCode.NoContent, postResponse.StatusCode);
         }
 
         [TestMethod]
         public async Task Delete404NotFound() {
-            using var client = new TestFilledClientFactory().TestClient;
+            using var clientFactory = new TestInMemoryAuthentificatedDbServerClientFactory<Mocks.MockDataSeeder>(() => Mocks.MockDataSeeder.AdminLogin); ;
+            var client = await clientFactory.GetTestClientAsync();
             var postResponse = await client.DeleteAsync($"/api/Books/46");
             Assert.AreEqual(System.Net.HttpStatusCode.NotFound, postResponse.StatusCode);
         }
 
         [TestMethod]
         public async Task Delete500InternalServerError() {
-            using var client = new TestFaultyClientFactory().TestClient;
+            using var clientFactory = new TestFaultyClientFactory<BookStoreApi.Code.AppDataSeeder>();
             var exampleDTO = GetUpdateExampleDTO();
+            var client = await clientFactory.GetTestClientAsync((client)=>AuthorizeMethods.AutorizeAsync(()=>AppDataSeeder.AdminDto, client));
             var postResponse = await client.DeleteAsync($"/api/Books/{exampleDTO.Id}");
             Assert.AreEqual(System.Net.HttpStatusCode.InternalServerError, postResponse.StatusCode);
         }

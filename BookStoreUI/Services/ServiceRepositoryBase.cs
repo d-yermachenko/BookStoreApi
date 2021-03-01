@@ -14,7 +14,7 @@ using BookStoreUI.Contracts;
 
 namespace BookStoreUI.Services {
     public class ServiceRepositoryBase<TEntity, TKey> : Contracts.IServiceRepository<TEntity, TKey>
-        where TEntity: class
+        where TEntity : class
         where TKey : IComparable<TKey> {
 
 
@@ -40,7 +40,7 @@ namespace BookStoreUI.Services {
             return RepositoryResponce.StatusCodeResponce(responce.StatusCode);
         }
 
-        public async  Task<RepositoryResponce> Delete(string url, TKey key) {
+        public async Task<RepositoryResponce> Delete(string url, TKey key) {
             if (key == null)
                 return RepositoryResponce.ArgumentNullResponce;
             var request = await _RequestMessageProvider.CreateMessageAsync(HttpMethod.Delete, Flurl.Url.Combine(url, key.ToString()));
@@ -55,7 +55,7 @@ namespace BookStoreUI.Services {
             var request = await _RequestMessageProvider.CreateMessageAsync(HttpMethod.Get, url);
             var client = _ClientFactory.CreateClient();
             var responce = await client.SendAsync(request);
-            if(responce.StatusCode != System.Net.HttpStatusCode.OK)
+            if (responce.StatusCode != System.Net.HttpStatusCode.OK)
                 return Array.Empty<TEntity>();
             return JsonConvert.DeserializeObject<IEnumerable<TEntity>>(await responce.Content.ReadAsStringAsync());
         }
@@ -74,8 +74,12 @@ namespace BookStoreUI.Services {
         public async Task<RepositoryResponce> Update(string url, TEntity entity) {
             if (entity == null)
                 return RepositoryResponce.ArgumentNullResponce;
-            var request = await _RequestMessageProvider.CreateMessageAsync(HttpMethod.Put, url + _KeyTaker.Invoke(entity));
-            request.Content = new StringContent(JsonConvert.SerializeObject(entity), Encoding.UTF8, MediaTypeNames.Application.Json);
+            var request = await _RequestMessageProvider.CreateMessageAsync(HttpMethod.Put, Flurl.Url.Combine(url, _KeyTaker.Invoke(entity).ToString()));
+            string entityJSON = JsonConvert.SerializeObject(entity, new JsonSerializerSettings() {
+                MaxDepth = 1,
+                ReferenceLoopHandling = ReferenceLoopHandling.Ignore
+            });
+            request.Content = new StringContent(entityJSON, Encoding.UTF8, MediaTypeNames.Application.Json);
             var client = _ClientFactory.CreateClient();
             var responce = await client.SendAsync(request);
             return RepositoryResponce.StatusCodeResponce(responce.StatusCode);

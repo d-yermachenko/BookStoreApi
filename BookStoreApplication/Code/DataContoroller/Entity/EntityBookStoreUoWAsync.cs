@@ -7,23 +7,23 @@ using System.Threading.Tasks;
 
 namespace BookStoreApi.Code.DataContoroller.Entity {
     public class EntityBookStoreUoWAsync : IBookStoreUnitOfWorkAsync, IDisposable {
-        private readonly IRepositoryAsync<Author> _Authors;
-        private readonly IRepositoryAsync<Book> _Books;
+        private readonly IRepositoryAsync<Author, int> _Authors;
+        private readonly IRepositoryAsync<Book, int> _Books;
         private readonly BookStoreContext _BookStoreContext;
 
 
 
         public EntityBookStoreUoWAsync(BookStoreContext dbContext) {
             _BookStoreContext = dbContext;
-            _Authors = new EntityRepositoryAsync<Author>(dbContext.Authors, a => a.Id);
-            _Books = new EntityRepositoryAsync<Book>(dbContext.Books, b => b.Id);
+            _Authors = new EntityRepositoryAsync<Author, int>(dbContext.Authors, x=>x.Id);
+            _Books = new EntityRepositoryAsync<Book, int>(dbContext.Books, x=>x.Id);
         }
 
-        public IRepositoryAsync<Author> Authors {
+        public IRepositoryAsync<Author, int> Authors {
             get => _Authors;
         }
 
-        public IRepositoryAsync<Book> Books {
+        public IRepositoryAsync<Book, int> Books {
             get => _Books;
         }
 

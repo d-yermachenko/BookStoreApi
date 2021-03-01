@@ -1,7 +1,5 @@
 ﻿@page "/Login"
-@using Contracts;
 @using Data.Models;
-@using Microsoft.AspNetCore.Localization;
 @using Microsoft.Extensions.Localization;
 @using BookStoreUI.Data.ViewModels.Authentification;
 
@@ -11,21 +9,17 @@
 
 
 <div class="card">
-    <h5 class="card-title">@localizer["Register user"]</h5>
+    <h5 class="card-title">@localizer["Login"]</h5>
     @if (Responce != null)
     {
-        @if (!Responce.Succeed)
+        if (!Responce.Succeed)
         {
-            <div class="alert alert-danger">
-                <p>@localizer[Responce.Message]</p>
-            </div>
+            <Fail Title="@localizer[Responce.Message]"/>
         }
         else
         {
-            <div class="alert alert-success">
-                <p>>@localizer[Responce.Message]</p>
-                <p><a href="/" class="float-right">@localizer["Home"]</a></p>
-            </div>
+            <Succeed Title="@localizer[Responce.Message]" AutoReturnUrl="/" AutoReturnDelay=TimeSpan.FromSeconds(1.5) 
+                     ShowReturnButton="true"/>
         }
     }
     <h6 class="card-subtitle mb-2 text-muted">@localizer["Please insert user details"]</h6>

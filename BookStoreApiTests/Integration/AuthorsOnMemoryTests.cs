@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Net.Mime;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -36,7 +37,8 @@ namespace BookStoreApiTests.Integration {
 
         [TestMethod]
         public async Task GetAuthorsFromInMemoryDb() {
-            var client = new TestInMemoryDbServerClientFactory<Mocks.MockDataSeeder>().TestClient;
+            using var clientFactory = new TestInMemoryAuthentificatedDbServerClientFactory<Mocks.MockDataSeeder>();
+            var client = await clientFactory.GetTestClientAsync();
             var response = await client.GetAsync("/api/Authors");
             bool succeed = response.IsSuccessStatusCode;
             var responseString = await response.Content.ReadAsStringAsync();
@@ -51,7 +53,8 @@ namespace BookStoreApiTests.Integration {
         #region Get
         [TestMethod]
         public async Task GetOne200Ok() {
-            var client = new TestInMemoryDbServerClientFactory<Mocks.MockDataSeeder>().TestClient;
+            using var clientFactory = new TestInMemoryAuthentificatedDbServerClientFactory<Mocks.MockDataSeeder>();
+            var client = await clientFactory.GetTestClientAsync();
             var response = await client.GetAsync("api/Authors/1");
             response.EnsureSuccessStatusCode();
             var responseString = await response.Content.ReadAsStringAsync();
@@ -64,26 +67,41 @@ namespace BookStoreApiTests.Integration {
         #region Post
         [TestMethod]
         public async Task Create201Created() {
-            var client = new TestInMemoryDbServerClientFactory<Mocks.MockDataSeeder>().TestClient;
-            var exampleDTO = GetCreateExampleDTO(); ;
-            var postResponse = await client.PostAsync("api/Authors", new StringContent(JsonConvert.SerializeObject(exampleDTO), Encoding.UTF8, "application/json"));
+            using var clientFactory = new TestInMemoryAuthentificatedDbServerClientFactory<Mocks.MockDataSeeder>();
+            var exampleDTO = GetCreateExampleDTO();
+            var content = new StringContent(JsonConvert.SerializeObject(exampleDTO), Encoding.UTF8, MediaTypeNames.Application.Json);
+            var client = await clientFactory.GetTestClientAsync((client)=>AuthorizeMethods.AutorizeAsync(()=>new UserLoginDTO() { 
+                Login = "admin",
+                Password = "P@ssword128!"
+            }, client));
+            var postResponse = await client.PostAsync("api/Authors", content);
             Assert.AreEqual(HttpStatusCode.Created, postResponse.StatusCode);
         }
 
         [TestMethod]
         public async Task Create400BadRequest() {
-            var client = new TestInMemoryDbServerClientFactory<Mocks.MockDataSeeder>().TestClient;
+            using var clientFactory = new TestInMemoryAuthentificatedDbServerClientFactory<Mocks.MockDataSeeder>();
             var exampleDTO = GetCreateExampleDTO();
             exampleDTO.Lastname = default;
-            var postResponse = await client.PostAsync("api/Authors", new StringContent(JsonConvert.SerializeObject(exampleDTO), Encoding.UTF8, "application/json"));
+            var content = new StringContent(JsonConvert.SerializeObject(exampleDTO), Encoding.UTF8, MediaTypeNames.Application.Json);
+            var client = await clientFactory.GetTestClientAsync(async (client) => await AuthorizeMethods.AutorizeAsync(() => new UserLoginDTO() {
+                Login = "admin",
+                Password = "P@ssword128!"
+            }, client));
+            var postResponse = await client.PostAsync("api/Authors", content);
             Assert.AreEqual(System.Net.HttpStatusCode.BadRequest, postResponse.StatusCode);
         }
 
         [TestMethod]
         public async Task CreateAndTakeBackAuthor() {
-            var client = new TestInMemoryDbServerClientFactory<Mocks.MockDataSeeder>().TestClient;
+            using var clientFactory = new TestInMemoryAuthentificatedDbServerClientFactory<Mocks.MockDataSeeder>();
             var exampleDTO = GetCreateExampleDTO();
-            var postResponse = await client.PostAsync("api/Authors", new StringContent(JsonConvert.SerializeObject(exampleDTO), Encoding.UTF8, "application/json"));
+            var content = new StringContent(JsonConvert.SerializeObject(exampleDTO), Encoding.UTF8, MediaTypeNames.Application.Json);
+            var client = await clientFactory.GetTestClientAsync(async (client) => await AuthorizeMethods.AutorizeAsync(() => new UserLoginDTO() {
+                Login = "admin",
+                Password = "P@ssword128!"
+            }, client));
+            var postResponse = await client.PostAsync("api/Authors", content);
             bool assertion = postResponse.IsSuccessStatusCode;
             Assert.IsTrue(assertion, "Save failed");
             var createdAuthor = JsonConvert.DeserializeObject<AuthorUpsertDTO>(await postResponse.Content.ReadAsStringAsync());

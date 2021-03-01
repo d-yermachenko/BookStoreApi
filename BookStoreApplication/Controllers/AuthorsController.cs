@@ -2,6 +2,8 @@
 using BookStoreApi.Contracts;
 using BookStoreApi.Data;
 using BookStoreApi.Data.DTOs;
+using BookStoreApi.Data.ModelBinders;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -37,7 +39,6 @@ namespace BookStoreApi.Controllers {
         /// <returns></returns>
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetAuthors() {
@@ -64,13 +65,12 @@ namespace BookStoreApi.Controllers {
         /// <returns>Author data, if found</returns>
         [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetAuthor(int id) {
             try {
                 _Logger.LogTrace($"Attempting to get author with id={id}");
-                var author = await _BookStore.Authors.FindAsync(filter: au => au.Id == id,
+                var author = await _BookStore.Authors.FindAsync(id: id,
                     includes: new Expression<Func<Author, object>>[] { x => x.Books });
                 if (author == null) {
                     _Logger.LogWarning($"Failed to get author id={id}");
@@ -96,8 +96,11 @@ namespace BookStoreApi.Controllers {
         /// <param name="author">Author data</param>
         /// <returns>New author if succeed; otherwise - message what went wrong</returns>
         [HttpPost]
+        [Authorize(Roles = "Administrator")]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> Create([FromBody] AuthorUpsertDTO author) {
             _Logger.LogInformation($"Author submition");
@@ -141,10 +144,15 @@ namespace BookStoreApi.Controllers {
         /// <param name="author">Author </param>
         /// <returns></returns>
         [HttpPut("{authorId}")]
+        [Authorize(Roles = "Administrator")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> Update(int authorId, [FromBody] AuthorUpsertDTO author) {
+        public async Task<IActionResult> Update(int authorId, [ModelBinder(typeof(AuthorModelBinder))] AuthorUpsertDTO author) {
+        //public async Task<IActionResult> Update(int authorId, [FromBody] AuthorUpsertDTO author) {
             try {
                 _Logger.LogTrace($"Author {authorId} attempt");
                 if (author == null) {
@@ -153,7 +161,7 @@ namespace BookStoreApi.Controllers {
                 }
                 if (!ModelState.IsValid)
                     return StatusCode(StatusCodes.Status400BadRequest, ModelState);
-                var authorToUpdate = await _BookStore.Authors.FindAsync(x => x.Id == authorId);
+                var authorToUpdate = await _BookStore.Authors.FindAsync(id: authorId);
                 if (authorToUpdate == null)
                     return NotFound($"Unable to find author to update");
                 authorToUpdate = _Mapper.Map<AuthorUpsertDTO, Author>(author, authorToUpdate);
@@ -171,20 +179,23 @@ namespace BookStoreApi.Controllers {
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Administrator")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> Delete(int id) {
             try {
-                var author = await _BookStore.Authors.FindAsync(x => x.Id == id);
-                if (author == null)
-                    return StatusCode(StatusCodes.Status404NotFound, "Author not found");
-                bool succeed = await _BookStore.Authors.DeleteAsync(author);
+                bool succeed = await _BookStore.Authors.DeleteAsync(id);
                 succeed &= await _BookStore.SaveData();
                 if (succeed)
                     return StatusCode(StatusCodes.Status204NoContent);
                 else
                     return StatusCode(StatusCodes.Status500InternalServerError, "Unable to remove ");
+            }
+            catch(KeyNotFoundException e) {
+                return NotFound(e.Message);
             }
             catch (Exception e) {
                 return InternalError(e, "Cant delete author");

@@ -14,17 +14,15 @@ namespace BookStoreApiTests.TestServers {
         }
 
         public static IConfiguration BuildBearerConfiguration() {
-            Dictionary<string, string> config = new Dictionary<string, string>();
-            config.Add("Jwt:Key", "c8fc66ec-98d2-432b-b224-122d0a6957d6");
-            config.Add("Jwt:Issuer", "Book store app");
+            Dictionary<string, string> config = new Dictionary<string, string> {
+                { "Jwt:Key", "c8fc66ec-98d2-432b-b224-122d0a6957d6" },
+                { "Jwt:Issuer", "Book store app" }
+            };
             IConfigurationBuilder builder = new ConfigurationBuilder()
                 .AddInMemoryCollection(config)
                 .SetBasePath(Directory.GetCurrentDirectory())
                 .AddJsonFile("appsettings.json");
             return builder.Build();
-
-
-
         }
     }
 }
