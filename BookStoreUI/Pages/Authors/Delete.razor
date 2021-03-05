@@ -1,9 +1,13 @@
 ﻿@page "/authors/delete/{Id}"
+@attribute [Authorize(Policy ="elementsDeleting")]
 @inject IAuthorsRepository _repository;
 @inject NavigationManager _navManager;
 @inject IStringLocalizer<BookStoreUI.Services.AuthorsRepository> localizer;
 
-<h3>@localizer["Are you sure that you want to delete this record?"]</h3>
+<div class="card-header">
+    <h3>@localizer["Are you sure that you want to delete this record?"]</h3>
+</div>
+
 
 @if (Model == null)
 {
@@ -13,17 +17,12 @@ else
 {
     @if (ModelObtainedSuccesfully == false)
     {
-        <div class="alert alert-danger">
-            @localizer["Failed to get author"]
-        </div>
+        <Fail Title="@localizer["Failed to get author"]"/>
     }
     else
     {
-        <div class="card">
-            <div class="card-header">
-                <h5 class="card-title">@localizer["Details about author"]</h5>
-            </div>
             <div class="card-body">
+                <h5 class="card-title">@localizer["Details about author"]</h5>
                 <div class="row">
                     <div class="col col-4">
                         <table class="table table-responsive-lg">
@@ -72,7 +71,15 @@ else
                     </div>
                 </div>
             </div>
-        </div>
+            <div class="card-footer">
+                <button @onclick="BackToList" role="navigation" class="btn btn-secondary">
+                    <span class="oi oi-media-step-backward"></span>@localizer["Back to list"]
+                </button>
+                <button @onclick="RemoveRecord" role="main" class="btn btn-danger">
+                    <span class="oi oi-trash"></span>@localizer["Remove author"]
+                </button>
+            </div>
+        
         if (RepositoryResponce?.Succeed == true)
         {
             <Succeed Title="@localizer["Author removed"]" AutoReturnUrl="/authors/" AutoReturnDelay=@TimeSpan.FromSeconds(5) ShowReturnButton="false"/>
@@ -85,12 +92,7 @@ else
 }
 
 
-<button @onclick="BackToList" class="btn btn-outline-secondary">
-    <span class="oi oi-media-step-backward"></span>@localizer["Back to list"]
-</button>
-<button @onclick="RemoveRecord" class="btn btn-danger">
-    <span class="oi oi-trash"></span>@localizer["Remove author"]
-</button>
+
 @code {
     [Parameter]
     public string Id { get; set; }

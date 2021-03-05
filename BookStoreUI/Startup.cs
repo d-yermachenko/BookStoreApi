@@ -37,7 +37,8 @@ namespace BookStoreUI {
             services.AddBlazoredLocalStorage();
             services.AddTransient<IHttpRequestMessageProviderAsync, HttpRequestMessageProvider>();
             services.AddTransient<IAuthentificationRepository, AuthentificationRepository>();
-            services.AddTransient<IAuthorsRepository, AuthorsRepository>();
+            services.AddTransient<IAuthorsRepository, AuthorsRepository>(); 
+            services.AddTransient<IBookRepository, BooksRepository>(); 
             services.AddScoped<JwtSecurityTokenHandler>();
             services.AddScoped<ApiAuthentificationStateProvider>();
             services.AddScoped<AuthenticationStateProvider>(p => p.GetRequiredService<ApiAuthentificationStateProvider>());
@@ -45,8 +46,19 @@ namespace BookStoreUI {
                 setupAction.ResourcesPath = "Resources";
             });
             services.AddMvc()
-                .AddDataAnnotationsLocalization();
-
+                .AddDataAnnotationsLocalization()
+                ;
+            services.AddAuthorization(options=> {
+                options.AddPolicy("elementsCreation", policy => {
+                    policy.RequireRole("Administrator");
+                });
+                options.AddPolicy("elementsEdition", policy => {
+                    policy.RequireRole("Administrator");
+                });
+                options.AddPolicy("elementsDeleting", policy => {
+                    policy.RequireRole("Administrator");
+                });
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

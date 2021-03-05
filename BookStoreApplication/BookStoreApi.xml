@@ -4,6 +4,29 @@
         <name>BookStoreApi</name>
     </assembly>
     <members>
+        <member name="M:BookStoreApi.Code.FileSystemImageService.SetImage(System.String,System.Threading.CancellationToken,System.String)">
+            <summary>
+            This method can decrease image quality, so call it only when image is 
+            </summary>
+            <param name="base64Content"></param>
+            <param name="cancellationToken">Cancellation token to cancel the operation</param>
+            <param name="identifier"></param>
+            <returns></returns>
+        </member>
+        <member name="M:BookStoreApi.Contracts.IImageService.SetImage(System.String,System.Threading.CancellationToken,System.String)">
+            <summary>
+            Saves image to configured location and returns its id to save
+            This method can decrease image quality, so call it only when image was changed
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:BookStoreApi.Contracts.IImageService.GetImage(System.String)">
+            <summary>
+            Gets image as base64 string
+            </summary>
+            <param name="identifier">Id of image</param>
+            <returns>Content of image as base64 string</returns>
+        </member>
         <member name="T:BookStoreApi.Controllers.AuthorsController">
             <summary>
             Endpoint used to interact with authors in the Book store database.

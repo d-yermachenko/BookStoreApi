@@ -8,23 +8,22 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace BookStoreApiTests.Mocks.InMemory {
-    public class MockRepositoryInMemoryAsync<TInstance, TKey> : BookStoreApi.Contracts.IRepositoryAsync<TInstance, TKey> 
+    public class MockRepositoryInMemoryAsync<TInstance, TKey> : BookStoreApi.Contracts.IRepositoryAsync<TInstance, TKey>
         where TInstance : class
-        where TKey: IComparable<TKey>{
+        where TKey : IComparable<TKey> {
         private readonly DbSet<TInstance> _Dataset;
-        private readonly Func<TInstance, TKey> _KeyGetter;
 
-        public MockRepositoryInMemoryAsync(DbSet<TInstance> inMemoryDbSet, Func<TInstance, TKey> keyGetter ) {
+        public MockRepositoryInMemoryAsync(DbSet<TInstance> inMemoryDbSet) {
             _Dataset = inMemoryDbSet;
-            _KeyGetter = keyGetter;
         }
 
         public async Task<bool> CreateAsync(TInstance entity) {
-            return (await _Dataset.AddAsync(entity)).State == EntityState.Added;
+            var result = _Dataset.Add(entity);
+            return await Task.FromResult(result.State == EntityState.Added);
         }
 
         public async Task<bool> DeleteAsync(TKey id) {
-            bool result ;
+            bool result;
             try {
                 var entity = await _Dataset.FindAsync(id);
                 if (entity == null)
@@ -38,20 +37,26 @@ namespace BookStoreApiTests.Mocks.InMemory {
             return result;
         }
 
-        public async Task<TInstance> FindAsync(TKey id, IEnumerable<Expression<Func<TInstance, object>>> includes = null) {
+
+
+        public async Task<TInstance> FindAsync(Expression<Func<TInstance, bool>> idPredicate, IEnumerable<Expression<Func<TInstance, object>>> includes = null) {
             return await Task.Run(() => {
-                IQueryable<TInstance> query = _Dataset.Local.AsQueryable();
-                return query.FirstOrDefault(x=>_KeyGetter.Invoke(x).CompareTo(id) == 0);
+                IQueryable<TInstance> query = _Dataset.AsQueryable();
+                if (includes != null) {
+                    foreach (var include in includes) {
+                        query = query.Include(include);
+                    }
+                }
+                return query.FirstOrDefault(idPredicate);
             });
-            
         }
 
         public async Task<bool> UpdateAsync(TInstance entity) => await Task.FromResult(_Dataset.Update(entity).State == EntityState.Modified);
 
         public async Task<ICollection<TInstance>> WhereAsync(Expression<Func<TInstance, bool>> filter = null, Func<IQueryable<TInstance>, IOrderedQueryable<TInstance>> order = null, IEnumerable<Expression<Func<TInstance, object>>> includes = null) {
             return await Task.Factory.StartNew<ICollection<TInstance>>(() => {
-                IQueryable<TInstance> instances = _Dataset.Local.AsQueryable();
-                if(filter != null)
+                IQueryable<TInstance> instances = _Dataset.AsQueryable();
+                if (filter != null)
                     instances = instances.Where(filter).AsQueryable();
                 return instances.ToList();
             });

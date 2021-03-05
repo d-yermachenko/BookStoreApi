@@ -13,7 +13,6 @@ namespace BookStoreApi.Data.ModelBinders {
                 bindingContext.HttpContext.Request.Body,
                 System.Text.Encoding.UTF8);
             bindingContext.ModelName = bindingContext.OriginalModelName;
-
             modelContent = await bodyReader.ReadToEndAsync();
             var model = Newtonsoft.Json.JsonConvert.DeserializeObject<BookUpsertDTO>(modelContent);
             bindingContext.Result = ModelBindingResult.Success(model);

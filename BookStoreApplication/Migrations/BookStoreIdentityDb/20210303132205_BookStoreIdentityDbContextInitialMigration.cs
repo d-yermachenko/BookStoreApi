@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace BookStoreApi.Migrations.BookStoreIdentityDb
 {
-    public partial class RefactIdentity : Migration
+    public partial class BookStoreIdentityDbContextInitialMigration : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {

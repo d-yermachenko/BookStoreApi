@@ -14,17 +14,19 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Net.Mime;
 using BookStoreApi.Code;
+using BookStoreApi.Data;
 
 namespace BookStoreApiTests.Integration {
     [TestClass]
     public class BooksControllerTests {
         #region Example DTOs
-        public static BookDTO GetCreateExampleDTO() {
-            return new BookDTO() {
+        public static BookUpsertDTO GetCreateExampleDTO() {
+            return new BookUpsertDTO() {
                 Id = 21,
                 Title = "Fahrenheit 451",
                 Isbn = "9780345342966",
-                
+                Image = "",
+                ImageWasChanged = false,
                 Year = 1998
             };
         }
@@ -35,7 +37,8 @@ namespace BookStoreApiTests.Integration {
                 Title = "It Came from Outer Space",
                 Isbn = "9780001842267",
                 Summary = "Nobody expects the roof to crash in when they are at school. Even less so when it turns out to be a spaceship with an alien inside. But the schoolchildren soon get to like the alien who is friendly, if ugly. Just before the alien leaves the teacher takes a photograph to remember him by.",
-                Year= 1992
+                Year= 1992,
+                Authors = new List<Author>() { new Author() {Id=1, Firstname = "1-1", Lastname="1-2" }, new Author() { Id = 2, Firstname = "1-1", Lastname = "1-2" } }
             };
         }
         #endregion
@@ -122,6 +125,17 @@ namespace BookStoreApiTests.Integration {
         }
 
         [TestMethod]
+        public async Task Create422UnprocessableEntity() {
+            using var clientFactory = new TestInMemoryAuthentificatedDbServerClientFactory<Mocks.MockDataSeeder>(() => Mocks.MockDataSeeder.AdminLogin);
+            var exampleDTO = GetCreateExampleDTO();
+            exampleDTO.Authors = new List<AuthorUpsertDTO>() {new AuthorUpsertDTO() { Id = 1, Firstname = "1-1", Lastname = "1-2" }, new AuthorUpsertDTO() { Id = 14, Firstname = "14-1", Lastname = "14-2" } };
+            var content = new StringContent(JsonConvert.SerializeObject(exampleDTO), Encoding.UTF8, MediaTypeNames.Application.Json);
+            var client = await clientFactory.GetTestClientAsync();
+            var postResponse = await client.PostAsync("/api/Books", content);
+            Assert.AreEqual(HttpStatusCode.UnprocessableEntity, postResponse.StatusCode);
+        }
+
+        [TestMethod]
         public async Task Create500InternalServerError() {
             using var clientFactory = new TestFaultyClientFactory<BookStoreApi.Code.AppDataSeeder>();
             var exampleDTO = GetCreateExampleDTO();
@@ -164,6 +178,18 @@ namespace BookStoreApiTests.Integration {
             var client = await clientFactory.GetTestClientAsync();
             var postResponse = await client.PutAsync($"/api/Books/{exampleDTO.Id}", content);
             Assert.AreEqual(System.Net.HttpStatusCode.NotFound, postResponse.StatusCode);
+        }
+
+
+        [TestMethod]
+        public async Task Update422UnprocessableEntity() {
+            using var clientFactory = new TestInMemoryAuthentificatedDbServerClientFactory<Mocks.MockDataSeeder>(() => Mocks.MockDataSeeder.AdminLogin); ;
+            var exampleDTO = GetUpdateExampleDTO();
+            exampleDTO.Authors = new List<Author>() { new Author() { Id = 1, Firstname = "1-1", Lastname = "1-2" }, new Author() { Id = 14, Firstname = "14-1", Lastname = "14-2" } };
+            var content = new StringContent(JsonConvert.SerializeObject(exampleDTO), Encoding.UTF8, MediaTypeNames.Application.Json);
+            var client = await clientFactory.GetTestClientAsync();
+            var postResponse = await client.PutAsync($"/api/Books/{exampleDTO.Id}", content);
+            Assert.AreEqual(HttpStatusCode.UnprocessableEntity, postResponse.StatusCode);
         }
 
         [TestMethod]

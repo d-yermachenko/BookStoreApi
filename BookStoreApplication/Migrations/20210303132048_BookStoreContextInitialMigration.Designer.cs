@@ -4,20 +4,37 @@ using BookStoreApi.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace BookStoreApi.Migrations
 {
     [DbContext(typeof(BookStoreContext))]
-    partial class BookStoreContextModelSnapshot : ModelSnapshot
+    [Migration("20210303132048_BookStoreContextInitialMigration")]
+    partial class BookStoreContextInitialMigration
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
                 .UseIdentityColumns()
                 .HasAnnotation("Relational:MaxIdentifierLength", 128)
                 .HasAnnotation("ProductVersion", "5.0.2");
+
+            modelBuilder.Entity("AuthorBook", b =>
+                {
+                    b.Property<int>("AuthorsId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("BooksId")
+                        .HasColumnType("int");
+
+                    b.HasKey("AuthorsId", "BooksId");
+
+                    b.HasIndex("BooksId");
+
+                    b.ToTable("AuthorBook");
+                });
 
             modelBuilder.Entity("BookStoreApi.Data.Author", b =>
                 {
@@ -50,11 +67,8 @@ namespace BookStoreApi.Migrations
                         .UseIdentityColumn();
 
                     b.Property<string>("Image")
-                        .HasMaxLength(2147483647)
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("ImageMimeType")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
 
                     b.Property<string>("Isbn")
                         .HasMaxLength(50)
@@ -68,9 +82,6 @@ namespace BookStoreApi.Migrations
                         .HasMaxLength(150)
                         .HasColumnType("nvarchar(150)");
 
-                    b.Property<string>("Thumbnail")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("Title")
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
@@ -83,48 +94,19 @@ namespace BookStoreApi.Migrations
                     b.ToTable("Books");
                 });
 
-            modelBuilder.Entity("BookStoreApi.Data.BookAuthor", b =>
+            modelBuilder.Entity("AuthorBook", b =>
                 {
-                    b.Property<int>("AuthorId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("BookId")
-                        .HasColumnType("int");
-
-                    b.HasKey("AuthorId", "BookId");
-
-                    b.HasIndex("BookId");
-
-                    b.ToTable("BookAuthor");
-                });
-
-            modelBuilder.Entity("BookStoreApi.Data.BookAuthor", b =>
-                {
-                    b.HasOne("BookStoreApi.Data.Author", "Author")
-                        .WithMany("AuthorBooks")
-                        .HasForeignKey("AuthorId")
+                    b.HasOne("BookStoreApi.Data.Author", null)
+                        .WithMany()
+                        .HasForeignKey("AuthorsId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("BookStoreApi.Data.Book", "Book")
-                        .WithMany("BookAuthors")
-                        .HasForeignKey("BookId")
+                    b.HasOne("BookStoreApi.Data.Book", null)
+                        .WithMany()
+                        .HasForeignKey("BooksId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Author");
-
-                    b.Navigation("Book");
-                });
-
-            modelBuilder.Entity("BookStoreApi.Data.Author", b =>
-                {
-                    b.Navigation("AuthorBooks");
-                });
-
-            modelBuilder.Entity("BookStoreApi.Data.Book", b =>
-                {
-                    b.Navigation("BookAuthors");
                 });
 #pragma warning restore 612, 618
         }

@@ -70,8 +70,8 @@ namespace BookStoreApi.Controllers {
         public async Task<IActionResult> GetAuthor(int id) {
             try {
                 _Logger.LogTrace($"Attempting to get author with id={id}");
-                var author = await _BookStore.Authors.FindAsync(id: id,
-                    includes: new Expression<Func<Author, object>>[] { x => x.Books });
+                var author = (await _BookStore.Authors.WhereAsync(filter: x => x.Id == id,
+                    includes: new Expression<Func<Author, object>>[] { x => x.Books })).FirstOrDefault();
                 if (author == null) {
                     _Logger.LogWarning($"Failed to get author id={id}");
                     return NotFound();
@@ -101,8 +101,9 @@ namespace BookStoreApi.Controllers {
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> Create([FromBody] AuthorUpsertDTO author) {
+        public async Task<IActionResult> Create([ModelBinder(typeof(AuthorModelBinder))] AuthorUpsertDTO author) {
             _Logger.LogInformation($"Author submition");
             try {
                 if (author == null) {
@@ -118,8 +119,26 @@ namespace BookStoreApi.Controllers {
                     x.Firstname.ToLower().Equals(author.Firstname.ToLower()) &&
                     x.Lastname.ToLower().Equals(author.Firstname.ToLower()));
                 if (similarAuthors.Count > 0)
-                    _Logger.LogWarning($"Attemption insert the duplicate for author {author.Firstname} {author.Lastname.ToUpper()}");
+                    _Logger.LogWarning($"Possible duplicate for author {author.Firstname} {author.Lastname.ToUpper()}");
                 Author writer = _Mapper.Map<Author>(author);
+                if (author.Books?.Count > 0) {
+                    List<Book> books = new List<Book>();
+                    for (int i = 0; i < author.Books.Count; i++) {
+                        var bookId = author.Books.ElementAt(i).Id;
+                        var book = await _BookStore.Books.FindAsync(b => b.Id == bookId);
+                        if (book != null) {
+                            book.Authors = null;
+                            books.Add(book);
+                        }
+                        else {
+                            string message = $"Failed to find book with id {bookId}";
+                            _Logger.LogWarning(message);
+                            return StatusCode(StatusCodes.Status422UnprocessableEntity, message);
+                        }
+                    }
+                    writer.Books = books;
+                }
+
                 var isSucceed = await _BookStore.Authors.CreateAsync(writer);
                 isSucceed &= await _BookStore.SaveData();
                 if (!isSucceed) {
@@ -152,7 +171,7 @@ namespace BookStoreApi.Controllers {
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> Update(int authorId, [ModelBinder(typeof(AuthorModelBinder))] AuthorUpsertDTO author) {
-        //public async Task<IActionResult> Update(int authorId, [FromBody] AuthorUpsertDTO author) {
+            //public async Task<IActionResult> Update(int authorId, [FromBody] AuthorUpsertDTO author) {
             try {
                 _Logger.LogTrace($"Author {authorId} attempt");
                 if (author == null) {
@@ -161,10 +180,27 @@ namespace BookStoreApi.Controllers {
                 }
                 if (!ModelState.IsValid)
                     return StatusCode(StatusCodes.Status400BadRequest, ModelState);
-                var authorToUpdate = await _BookStore.Authors.FindAsync(id: authorId);
+                var authorToUpdate = await _BookStore.Authors.FindAsync(idPredicate: (x) => x.Id == authorId);
                 if (authorToUpdate == null)
                     return NotFound($"Unable to find author to update");
                 authorToUpdate = _Mapper.Map<AuthorUpsertDTO, Author>(author, authorToUpdate);
+                if (author.Books?.Count > 0) {
+                    List<Book> books = new List<Book>();
+                    for (int i = 0; i < author.Books.Count; i++) {
+                        var bookId = author.Books.ElementAt(i).Id;
+                        var book = await _BookStore.Books.FindAsync(b => b.Id == bookId);
+                        if (book != null) {
+                            book.Authors = null;
+                            books.Add(book);
+                        }
+                        else {
+                            string message = $"Failed to find book with id {bookId}";
+                            _Logger.LogWarning(message);
+                            return StatusCode(StatusCodes.Status422UnprocessableEntity, message);
+                        }
+                    }
+                    authorToUpdate.Books = books;
+                }
                 bool succeed = await _BookStore.Authors.UpdateAsync(authorToUpdate);
                 succeed &= await _BookStore.SaveData();
                 if (succeed)
@@ -194,7 +230,7 @@ namespace BookStoreApi.Controllers {
                 else
                     return StatusCode(StatusCodes.Status500InternalServerError, "Unable to remove ");
             }
-            catch(KeyNotFoundException e) {
+            catch (KeyNotFoundException e) {
                 return NotFound(e.Message);
             }
             catch (Exception e) {

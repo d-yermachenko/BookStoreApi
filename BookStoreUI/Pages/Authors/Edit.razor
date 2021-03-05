@@ -1,57 +1,63 @@
 ﻿@page "/authors/edit/{Id}"
+@attribute [Authorize(Policy = "elementsEdition")]
 @inject IAuthorsRepository _repository;
 @inject NavigationManager _navManager;
 @inject IStringLocalizer<BookStoreUI.Services.AuthorsRepository> localizer;
-
-<h3>@localizer["Edit"]</h3>
+<div class="card-header">
+    <h3>@localizer["Edit"]</h3>
+</div>
 @if (RepositoryResponce?.Succeed == true)
 {
-    <Succeed Title="@localizer["Author saved succesfully"]"></Succeed>
+<Succeed Title="@localizer["Author saved succesfully"]"></Succeed>
 }
 else
 {
     if (Model != null)
     {
-        <EditForm OnValidSubmit="SaveChanges" Model="Model">
-            <DataAnnotationsValidator />
-            <ValidationSummary />
-            <div class="form-group">
-                <label for="firstName">@localizer["First name"]</label>
-                <InputText Id="firstName" class="form-control" @bind-Value="Model.Firstname" />
-                <ValidationMessage For="@(() => Model.Firstname)"></ValidationMessage>
-            </div>
-            <div class="form-group">
-                <label for="lastName">@localizer["Last name"]</label>
-                <InputText Id="lastName" class="form-control" @bind-Value="Model.Lastname" />
-                <ValidationMessage For="@(() => Model.Lastname)"></ValidationMessage>
-            </div>
-            <div class="form-group">
-                <label for="userName">@localizer["Bio"]</label>
-                <InputTextArea Id="userName" class="form-control" @bind-Value="Model.Bio" />
-                <ValidationMessage For="@(() => Model.Bio)"></ValidationMessage>
-            </div>
-            <button class="btn btn-primary" type="submit">
-                <span class="oi oi-pencil"></span> @localizer["Edit author"]
-            </button>
+<EditForm OnValidSubmit="SaveChanges" Model="Model">
+    <div class="card-body">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+        <div class="form-group">
+            <label for="firstName">@localizer["First name"]</label>
+            <InputText Id="firstName" class="form-control" @bind-Value="Model.Firstname" />
+            <ValidationMessage For="@(() => Model.Firstname)"></ValidationMessage>
+        </div>
+        <div class="form-group">
+            <label for="lastName">@localizer["Last name"]</label>
+            <InputText Id="lastName" class="form-control" @bind-Value="Model.Lastname" />
+            <ValidationMessage For="@(() => Model.Lastname)"></ValidationMessage>
+        </div>
+        <div class="form-group">
+            <label for="userName">@localizer["Bio"]</label>
+            <InputTextArea Id="userName" class="form-control" @bind-Value="Model.Bio" />
+            <ValidationMessage For="@(() => Model.Bio)"></ValidationMessage>
+        </div>
+    </div>
+    <div class="card-footer">
+        <button class="btn btn-primary" type="submit">
+            <span class="oi oi-pencil"></span> @localizer["Edit author"]
+        </button>
+        <a class="btn btn-secondary" @onclick="BackToList">
+            <span class="oi oi-media-skip-backward" />@localizer["Back to list"]
+        </a>
+    </div>
 
-        </EditForm>
+
+</EditForm>
     }
     else
     {
-        <Loading Title="@localizer["Author data is loading"]"></Loading>
+<Loading Title="@localizer["Author data is loading"]"></Loading>
     }
 }
 @if (RepositoryResponce?.Succeed == false)
 {
-    <Fail Title="@localizer[RepositoryResponce.Message]"></Fail>
+<Fail Title="@localizer[RepositoryResponce.Message]"></Fail>
 }
-<button @onclick="BackToList" class="btn btn-outline-secondary"><span class="oi oi-media-step-backward"></span></button>
 
 
-@if (Model == null)
-{
-    <Loading Title="@localizer["Loading author"]"></Loading>
-}
+
 
 @code {
     [Parameter]

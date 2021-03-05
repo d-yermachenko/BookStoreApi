@@ -12,7 +12,7 @@ namespace BookStoreApi.Data
     {
         public Author()
         {
-            Books = new HashSet<Book>();
+            AuthorBooks = new List<BookAuthor>();
         }
 
         public int Id { get; set; }
@@ -21,5 +21,7 @@ namespace BookStoreApi.Data
         public string Bio { get; set; }
 
         public virtual ICollection<Book> Books { get; set; }
+
+        public IList<BookAuthor> AuthorBooks { get; set; }
     }
 }

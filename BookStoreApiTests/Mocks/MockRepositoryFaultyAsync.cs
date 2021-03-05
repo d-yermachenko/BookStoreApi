@@ -17,7 +17,7 @@ namespace BookStoreApiTests.Mocks {
             throw new InvalidOperationException("Due the nature of repository, delete operation failed");
         }
 
-        public Task<TEntity> FindAsync(TKey id, IEnumerable<Expression<Func<TEntity, object>>> includes = null) {
+        public Task<TEntity> FindAsync(Expression<Func<TEntity, bool>> idPredicate, IEnumerable<Expression<Func<TEntity, object>>> includes = null) {
             throw new InvalidOperationException("Due the nature of repository, find operation failed");
         }
 

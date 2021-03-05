@@ -15,8 +15,8 @@ namespace BookStoreApi.Code.DataContoroller.Entity {
 
         public EntityBookStoreUoWAsync(BookStoreContext dbContext) {
             _BookStoreContext = dbContext;
-            _Authors = new EntityRepositoryAsync<Author, int>(dbContext.Authors, x=>x.Id);
-            _Books = new EntityRepositoryAsync<Book, int>(dbContext.Books, x=>x.Id);
+            _Authors = new EntityRepositoryAsync<Author, int>(dbContext.Authors);
+            _Books = new EntityRepositoryAsync<Book, int>(dbContext.Books);
         }
 
         public IRepositoryAsync<Author, int> Authors {

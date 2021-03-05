@@ -13,7 +13,7 @@ using Blazored.LocalStorage;
 using BookStoreUI.Contracts;
 
 namespace BookStoreUI.Services {
-    public class ServiceRepositoryBase<TEntity, TKey> : Contracts.IServiceRepository<TEntity, TKey>
+    public class ServiceRepositoryBase<TEntity,  TKey> : IServiceRepository<TEntity, TKey>
         where TEntity : class
         where TKey : IComparable<TKey> {
 

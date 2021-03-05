@@ -12,6 +12,11 @@ namespace BookStoreApi.Data.DTOs {
         public string Isbn { get; set; }
         public string Summary { get; set; }
         public string Image { get; set; }
+
+        public string ImageMimeType { get; set; }
+
+        public string Thumbnail { get; set; }
+
         public decimal? Price { get; set; }
 
         public virtual ICollection<Author> Authors { get; set; }
@@ -29,6 +34,9 @@ namespace BookStoreApi.Data.DTOs {
         public string Isbn { get; set; }
         public string Summary { get; set; }
         public string Image { get; set; }
+
+        public string ImageMimeType { get; set; }
+        public bool ImageWasChanged { get; set; }
         public decimal? Price { get; set; }
 
         public virtual IList<AuthorUpsertDTO> Authors { get; set; }

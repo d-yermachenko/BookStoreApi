@@ -14,9 +14,14 @@ namespace BookStoreUI.Data.DTOs {
         public string Isbn { get; set; }
         public string Summary { get; set; }
         public string Image { get; set; }
+
+        public string Thumbnail { get; set; }
+        public string ImageMimeType { get; set; }
+        public bool ImageWasChanged { get; set; }
         public decimal? Price { get; set; }
 
         public virtual IList<Author> Authors { get; set; }
 
     }
+
 }

@@ -2,58 +2,55 @@
 @inject IAuthorsRepository _repository;
 @inject NavigationManager _navManager;
 @inject IStringLocalizer<BookStoreUI.Services.AuthorsRepository> localizer;
-
-<h3>@localizer["Details about authors"]</h3>
+<div class="card-header">
+    <h3 class="card-header">@localizer["Details about authors"]</h3>
+</div>
 
 @if (Author.Item1 == null)
 {
-    <div class="alert alert-info">
-        @localizer["Getting author"]
-    </div>
+    <Loading Title="@localizer["Getting author"]" />
+
 }
 else
 {
     @if (Author.Item1 == false)
     {
-        <div class="alert alert-danger">
-            @localizer["Failed to get authors"]
-        </div>
+        <Fail Title="@localizer["Failed to get authors"]" />
+
     }
     else
     {
-        <div class="card">
-            <div class="card-header">
-                <h5 class="card-title">@localizer["Details about author"]</h5>
-            </div>
-            <div class="card-body">
-                <div class="row">
-                    <div class="col col-4">
-                        <table class="table table-responsive-lg">
-                            <tbody>
-                                <tr>
-                                    <td>@localizer["First name"]</td>
-                                    <td>@Author.Item2.Firstname</td>
-                                </tr>
-                                <tr>
-                                    <td>@localizer["Last name"]</td>
-                                    <td>@Author.Item2.Lastname</td>
-                                </tr>
-                                <tr>
-                                    <td>@localizer["Bio"]</td>
-                                    <td>@Author.Item2.Bio</td>
-                                </tr>
-                            </tbody>
+        <div class="card-body">
+            <h5 class="card-title">@localizer["Details about author"]</h5>
+            <div class="row">
+                <div class="col col-4">
+                    <table class="table table-responsive-lg">
+                        <tbody>
+                            <tr>
+                                <td>@localizer["First name"]</td>
+                                <td>@Author.Item2.Firstname</td>
+                            </tr>
+                            <tr>
+                                <td>@localizer["Last name"]</td>
+                                <td>@Author.Item2.Lastname</td>
+                            </tr>
+                            <tr>
+                                <td>@localizer["Bio"]</td>
+                                <td>@Author.Item2.Bio</td>
+                            </tr>
+                        </tbody>
 
-                        </table>
-                    </div>
-                    <div class="col-8">
-                        @if(Author.Item2.Books?.Count == 0)
-                        {
-                            <div class="alert alert-dismissible alert-primary">
-                                @localizer["No books from this author"]
-                            </div>
-                        }
-                        else { 
+                    </table>
+                </div>
+                <div class="col-8">
+                    @if (Author.Item2.Books?.Count == 0)
+                    {
+                        <div class="alert alert-dismissible alert-primary">
+                            @localizer["No books from this author"]
+                        </div>
+                    }
+                    else
+                    {
                         <div class="card">
                             <div class="card-header">
                                 <h5>@localizer["Books"]</h5>
@@ -68,16 +65,18 @@ else
                                 </ul>
                             </div>
                         </div>
-                        }
-                        
-                    </div>
+                    }
+
                 </div>
             </div>
+        </div>
+        <div class="card-footer">
+            <button @onclick="BackToList" class="btn btn-outline-secondary"><span class="oi oi-media-step-backward"></span></button>
         </div>
     }
 }
 
-<button @onclick="BackToList" class="btn btn-outline-secondary"><span class="oi oi-media-step-backward"></span></button>
+
 
 @code {
     [Parameter]

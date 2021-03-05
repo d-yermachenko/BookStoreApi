@@ -1,0 +1,175 @@
+﻿
+@page "/books/create";
+@attribute [Authorize(Policy = "elementsCreation")];
+@inject IStringLocalizer<BookStoreUI.Services.BooksRepository> localizer;
+@inject IBookRepository _books;
+@inject IAuthorsRepository _authors;
+
+@using System.Net.Mime;
+@using BookStoreUI.Services;
+<div class="card-header">
+    <h3 class="card-header">@localizer["Create"]</h3>
+</div>
+@if (_IsSucceed == true)
+{
+    <Succeed AutoReturnUrl="/books/" ShowReturnButton="true" Title="@localizer["Book created successfully"]"
+             AutoReturnDelay="@TimeSpan.FromSeconds(2.5)" />
+}
+else
+{
+    if (_IsSucceed == false)
+    {
+        <Fail Title="@localizer["Failed to create the book"]"></Fail>
+    }
+
+
+    <EditForm OnValidSubmit="OnValidSubmit" Model="Model">
+        <div class="card-body">
+            
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+            <div class="form-group">
+                <label for="title">@localizer["Title"]</label>
+                <InputText @bind-Value="Model.Title" id="title" class="form-control"></InputText>
+            </div>
+            <div class="form-group">
+                <label for="isbn">@localizer["ISBN"]</label>
+                <InputText @bind-Value="Model.Isbn" id="isbn" class="form-control"></InputText>
+            </div>
+            <div class="form-group">
+                <label for="isbn">@localizer["Price"]</label>
+                <InputNumber @bind-Value="Model.Price" id="price" class="form-control"></InputNumber>
+            </div>
+            <div class="form-group">
+                <label for="isbn">@localizer["Book cover"]</label>
+                <InputFile id="bookCover" OnChange="OnInputFileChange" class="form-control"></InputFile>
+                <button id="bookClearImage" @onclick="ClearImage" class="btn btn-danger">@localizer["Remove image"]</button>
+                <button id="bookResetImage" @onclick="ResetImage" class="btn btn-info">@localizer["Reset image"]</button>
+                @if (!String.IsNullOrEmpty(_UploadedFileError))
+                {
+                    <Fail Title="@_UploadedFileError" />
+                }
+                else if (!String.IsNullOrWhiteSpace(ModelImage))
+                {
+                    <img src="@ModelImageInline" alt="Miniature" class="img-thumbnail bookIcon" />
+                }
+            </div>
+            <div class="form-group">
+                @if (Model?.Authors != null && Authors != null)
+                {
+                    <label for="authors">@localizer["Authors"]</label>
+                    <MultiSelect @bind-Items="Model.Authors" Source="Authors" TEntry="Author" Accessor="GetAutor"
+                                 Title="@localizer["Select authors for this book"]"></MultiSelect>
+                }
+            </div>
+
+        </div>
+        <div class="card-footer">
+            <a class="btn btn-outline-info" href="/books/"><span class="oi oi-media-skip-backward" />@localizer["Back to list"]</a>
+            <button class="btn btn-primary" type="submit">
+                <span class="oi oi-pencil"></span> @localizer["Create author"]
+            </button>
+        </div>
+    </EditForm>
+
+}
+
+
+
+@code {
+    private Book Model;
+
+    private List<Author> Authors;
+
+    private string ModelImageInline;
+    private string ModelImage;
+
+    private bool? _IsSucceed { get; set; }
+    private string _UploadedFileError { get; set; } = string.Empty;
+
+    private async Task OnInputFileChange(InputFileChangeEventArgs e)
+    {
+        string pictureString = string.Empty;
+        if (e.FileCount == 1)
+        {
+            try
+            {
+                var mimeTypes = new string[] { MediaTypeNames.Image.Jpeg, MediaTypeNames.Image.Gif, "image/png" };
+                if (mimeTypes.Contains(e.File.ContentType))
+                {
+                    pictureString = await e.File.OpenReadStream().GetBase64StringAsync();
+                    Model.ImageWasChanged = true;
+                    _UploadedFileError = String.Empty;
+                    ModelImage = pictureString;
+                    ModelImageInline = String.Format("data:{0};base64,{1}", e.File.ContentType, pictureString);
+                }
+                else
+                {
+                    _UploadedFileError = localizer["Invalid image content type. Please select jpeg, gif, png image or leave file imput empty"];
+                }
+
+            }
+            catch (System.IO.IOException ioe)
+            {
+                _UploadedFileError = localizer[ioe.Message];
+            }
+            catch (Exception)
+            {
+                _UploadedFileError = localizer["Something went wrong when uploading image"];
+            }
+        }
+        else if (e.FileCount == 0)
+            _UploadedFileError = string.Empty;
+        else
+            _UploadedFileError = localizer["You can select only one file"];
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        Model = new Book();
+        Model.Authors = new List<Author>();
+        Authors = (await _authors.Get()).ToList();
+    }
+
+    private Task ClearImage()
+    {
+        Model.ImageWasChanged = true;
+        ModelImage = String.Empty;
+        return Task.CompletedTask;
+    }
+
+    private Task ResetImage()
+    {
+        Model.ImageWasChanged = false;
+        ModelImage = Model.Image;
+        ModelImageInline = String.Format("data:{0};base64,{1}", Model.ImageMimeType, ModelImage);
+        return Task.CompletedTask;
+    }
+
+    private async Task OnValidSubmit()
+    {
+        try
+        {
+            if (Model.ImageWasChanged)
+                Model.Image = ModelImage;
+            var answer = await _books.Create(Model);
+            _IsSucceed = answer.Succeed;
+        }
+        catch (Exception)
+        {
+            _IsSucceed = false;
+        }
+
+
+    }
+
+    private string GetAutor(object element)
+    {
+        Author author = (Author)element;
+        return $"{author.Firstname} {author.Lastname}";
+
+    }
+
+
+
+}

@@ -11,11 +11,9 @@ namespace BookStoreApi.Code.DataContoroller.Entity {
         where TEntity : class
         where TKey: IComparable<TKey>{
 
-        private readonly Func<TEntity, TKey> _KeyGetter;
 
-        public EntityRepositoryAsync(DbSet<TEntity> entities, Func<TEntity, TKey> keyGetter) {
+        public EntityRepositoryAsync(DbSet<TEntity> entities) {
             _ObjectSet = entities;
-            _KeyGetter = keyGetter;
         }
 
         private readonly DbSet<TEntity> _ObjectSet;
@@ -51,13 +49,15 @@ namespace BookStoreApi.Code.DataContoroller.Entity {
             return result;
         }
 
-        public async Task<TEntity> FindAsync(TKey id, IEnumerable<Expression<Func<TEntity, object>>> includes = null) {
-            IQueryable<TEntity> query = _ObjectSet.AsQueryable();
+        public async Task<TEntity> FindAsync(Expression<Func<TEntity, bool>> idPredicate, IEnumerable<Expression<Func<TEntity, object>>> includes = null) {
+
+            var query = _ObjectSet.AsQueryable();
             if (includes != null) {
-                foreach (var include in includes)
+                foreach (var include in includes) {
                     query = query.Include(include);
+                }
             }
-            return await query.FirstOrDefaultAsync(x=>_KeyGetter.Invoke(x).CompareTo(id) == 0);
+            return await query.FirstOrDefaultAsync(idPredicate);
         }
 
         public async Task<bool> UpdateAsync(TEntity entity) {

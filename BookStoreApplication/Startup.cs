@@ -75,6 +75,7 @@ namespace BookStoreApplication {
             services.AddDatabaseDeveloperPageExceptionFilter();
             services.AddTransient<IAppDataSeeder, BookStoreApi.Code.AppDataSeeder>();
             services.AddScoped<IBookStoreUnitOfWorkAsync, EntityBookStoreUoWAsync>();
+            services.AddScoped<IImageService, BookStoreApi.Code.FileSystemImageService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

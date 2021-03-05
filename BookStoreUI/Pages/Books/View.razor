@@ -1,0 +1,111 @@
+﻿@page "/books/view/{BookId}"
+@attribute [Authorize]
+@inject IStringLocalizer<BookStoreUI.Services.BooksRepository> localizer;
+@inject IBookRepository _books;
+<div class="card-header">
+    <h3 class="card-title">@localizer["View book details"]</h3>
+</div>
+<div class="card-body">
+    @if (ModelObtained == null)
+    {
+        <Loading Title="@localizer["Loading book details"]"></Loading>
+    }
+    else if (ModelObtained == false)
+    {
+        <Fail Title="@localizer["Failed to load book details"]"></Fail>
+    }
+    else if (ModelObtained == true)
+    {
+        if (Model != null)
+        {
+            <div class="row">
+                <div class=" col col-md-6">
+                    <table class="table table-responsive">
+                        <tbody>
+                            <tr>
+                                <td>
+                                    <strong>@localizer["Title"]</strong>
+                                </td>
+                                <td>
+                                    @Model.Title
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <strong>@localizer["Authors"]</strong>
+                                </td>
+                                <td>
+                                    <ul>
+                                        @foreach (var author in Model?.Authors)
+                                        {
+                                            <li><a href="/authors/view/@author.Id">@author.Firstname @author.Lastname</a></li>
+                                        }
+                                    </ul>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <strong>@localizer["Year"]</strong>
+                                </td>
+                                <td>
+                                    @Model.Year
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <strong>@localizer["Summary"]</strong>
+                                </td>
+                                <td>
+                                    @Model.Summary
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <strong>@localizer["Isbn"]</strong>
+                                </td>
+                                <td>
+                                    @Model.Isbn
+                                </td>
+                            </tr>
+                            
+                        </tbody>
+                    </table>
+                </div>
+                <div class="col col-md-4">
+                    <img src="@String.Format("data:{0};base64,{1}", Model.ImageMimeType, Model.Image)" alt="@Model.Title" class="bookPicture" />
+                    <h3 class="text-center text-info">@String.Format("{0:C}", Model.Price)</h3>
+                </div>
+            </div>
+        }
+    }
+</div>
+<div class="card-footer">
+    <a href="/books/" class="btn btn-outline-secondary">
+        <span class="oi oi-media-skip-backward"></span> @localizer["Back to list"]
+    </a>
+</div>
+
+@code {
+    [Parameter]
+    public string BookId { get; set; }
+
+    private Book Model { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (Int32.TryParse(BookId, out int bookId))
+        {
+            Model = await _books.Get(bookId);
+            ModelObtained = true;
+        }
+        else
+            ModelObtained = false;
+
+    }
+
+
+    private bool? ModelObtained { get; set; } = null;
+
+}
+
+

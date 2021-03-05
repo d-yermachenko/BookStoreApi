@@ -48,3 +48,21 @@ a, .btn-link {
         right: 0.75rem;
         top: 0.5rem;
     }
+
+img.bookIcon {
+    height: 50px;
+    width: 50px;
+    display: block;
+    font: normal 10px verdana;
+    color: lightgray;
+    background-color: brown;
+}
+
+img.bookPicture {
+    height: 300px;
+    width: 300px;
+    display: block;
+    font: normal 10px verdana;
+    color: lightgray;
+    background-color: brown;
+}

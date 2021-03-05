@@ -8,7 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace BookStoreApiTests.Mocks {
-    public class MockRepositoryAsync<TInstance, TKey> : BookStoreApi.Contracts.IRepositoryAsync<TInstance, TKey>
+    /*public class MockRepositoryAsync<TInstance, TKey> : BookStoreApi.Contracts.IRepositoryAsync<TInstance, TKey>
         where TInstance : class
         where TKey : IComparable<TKey> {
         private readonly ConcurrentDictionary<IComparable, TInstance> _Dataset;
@@ -43,10 +43,10 @@ namespace BookStoreApiTests.Mocks {
 
 
 
-        public Task<TInstance> FindAsync(TKey id, IEnumerable<Expression<Func<TInstance, object>>> includes = null) {
+        public Task<TInstance> FindAsync(Expression<Func<TInstance, bool>> idPredicate, IEnumerable<Expression<Func<TInstance, object>>> includes = null) {
             return Task.Factory.StartNew(() => {
                 IQueryable<TInstance> instances = _Dataset.Values.AsQueryable();
-                var requestedData = instances.FirstOrDefault(x => _KeyTaker.Invoke(x).CompareTo(id) == 0);
+                var requestedData = instances.FirstOrDefault(idPredicate);
                 return requestedData;
             });
         }
@@ -78,5 +78,5 @@ namespace BookStoreApiTests.Mocks {
 
             });
         }
-    }
+    }*/
 }

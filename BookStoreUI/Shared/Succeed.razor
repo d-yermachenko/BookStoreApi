@@ -4,7 +4,9 @@
 @inject NavigationManager _NavManager;
 
 <div class="alert alert-success">
-    @Title
+    <p class="active">
+        @Title
+    </p>
     @if (!String.IsNullOrWhiteSpace(AutoReturnUrl) && ShowReturnButton)
     {
         <a class="btn btn-primary" @onclick="ReturnToListAsync">

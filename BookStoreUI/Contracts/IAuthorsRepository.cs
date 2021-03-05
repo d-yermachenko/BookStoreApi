@@ -5,6 +5,6 @@ using System.Linq;
 using System.Threading.Tasks;
 
 namespace BookStoreUI.Contracts {
-    public interface IAuthorsRepository : IRepository<Author, int> {
+    public interface IAuthorsRepository : IRepository<Author,  int> {
     }
 }

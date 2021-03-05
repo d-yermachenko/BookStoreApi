@@ -17,8 +17,8 @@ namespace BookStoreApiTests.Mocks.InMemory {
 
         public MockBookStoreInMemoryUnitOfWork(MockBookStoreInMemoryContext storeContext) {
             _BookStoreContext = storeContext;
-            _AuthorsRepository = new MockRepositoryInMemoryAsync<Author, int>(_BookStoreContext.Authors, x=>x.Id);
-            _BooksRepository = new MockRepositoryInMemoryAsync<Book, int>(_BookStoreContext.Books, x=>x.Id);
+            _AuthorsRepository = new MockRepositoryInMemoryAsync<Author, int>(_BookStoreContext.Authors);
+            _BooksRepository = new MockRepositoryInMemoryAsync<Book, int>(_BookStoreContext.Books);
         }
 
         public IRepositoryAsync<Author, int> Authors {

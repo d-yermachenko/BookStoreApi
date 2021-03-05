@@ -26,8 +26,13 @@ namespace BookStoreApiTests.Integration {
                 Id = 21,
                 Firstname = "Ray",
                 Lastname = "Bradbury",
-                Bio = @"Ray Douglas Bradbury (/ˈbrædˌbɛri/; August 22, 1920 – June 5, 2012) was an American author and screenwriter. One of the most celebrated 20th- and 21st-century American writers, he worked in a variety of genres including fantasy, science fiction, horror, and mystery fiction."
-            };
+                Bio = @"Ray Douglas Bradbury (/ˈbrædˌbɛri/; August 22, 1920 – June 5, 2012) was an American author and screenwriter. One of the most celebrated 20th- and 21st-century American writers, he worked in a variety of genres including fantasy, science fiction, horror, and mystery fiction.",
+                Books = new List<BookDTO>() {
+                new BookDTO() { Id = 1, Title = "1-1", Isbn="978-3-16-148420-0"},
+                new BookDTO() { Id = 2, Title = "2-1", Isbn="978-3-16-148421-0"}
+            }
+
+        };
         }
 
         public static AuthorDTO GetUpdateExampleDTO() {
@@ -106,12 +111,23 @@ namespace BookStoreApiTests.Integration {
         #region Post
         [TestMethod]
         public async Task Create201Created() {
-            using var clientFactory = new TestInMemoryAuthentificatedDbServerClientFactory<MockDataSeeder>(()=>MockDataSeeder.AdminLogin);
+            using var clientFactory = new TestInMemoryAuthentificatedDbServerClientFactory<MockDataSeeder>(() => MockDataSeeder.AdminLogin);
             var exampleDTO = GetCreateExampleDTO();
             var content = new StringContent(JsonConvert.SerializeObject(exampleDTO), Encoding.UTF8, MediaTypeNames.Application.Json);
             var client = await clientFactory.GetTestClientAsync();
             var postResponse = await client.PostAsync("api/Authors", content);
             Assert.AreEqual(HttpStatusCode.Created, postResponse.StatusCode);
+        }
+
+        [TestMethod]
+        public async Task Create400BadRequest() {
+            using var clientFactory = new TestInMemoryAuthentificatedDbServerClientFactory<AppDataSeeder>(() => AppDataSeeder.AdminDto);
+            var exampleDTO = GetCreateExampleDTO();
+            exampleDTO.Lastname = default;
+            var content = new StringContent(JsonConvert.SerializeObject(exampleDTO), Encoding.UTF8, MediaTypeNames.Application.Json);
+            var client = await clientFactory.GetTestClientAsync();
+            var postResponse = await client.PostAsync("api/Authors", content);
+            Assert.AreEqual(HttpStatusCode.BadRequest, postResponse.StatusCode);
         }
 
         [TestMethod]
@@ -134,15 +150,20 @@ namespace BookStoreApiTests.Integration {
             Assert.AreEqual(HttpStatusCode.Forbidden, postResponse.StatusCode);
         }
 
+
+
         [TestMethod]
-        public async Task Create400BadRequest() {
-            using var clientFactory = new TestInMemoryAuthentificatedDbServerClientFactory<AppDataSeeder>(() => AppDataSeeder.AdminDto);
+        public async Task Create422UnprocessableEntity() {
+            using var clientFactory = new TestInMemoryAuthentificatedDbServerClientFactory<MockDataSeeder>(() => MockDataSeeder.AdminLogin);
             var exampleDTO = GetCreateExampleDTO();
-            exampleDTO.Lastname = default;
+            exampleDTO.Books = new List<BookDTO>() {
+                new BookDTO() { Id = 1, Title = "1-1", Isbn="978-3-16-148420-0"},
+                new BookDTO() { Id = 18, Title = "18-1", Isbn="978-3-16-148421-0"}
+            };
             var content = new StringContent(JsonConvert.SerializeObject(exampleDTO), Encoding.UTF8, MediaTypeNames.Application.Json);
             var client = await clientFactory.GetTestClientAsync();
             var postResponse = await client.PostAsync("api/Authors", content);
-            Assert.AreEqual(HttpStatusCode.BadRequest, postResponse.StatusCode);
+            Assert.AreEqual(HttpStatusCode.UnprocessableEntity, postResponse.StatusCode);
         }
 
         [TestMethod]
@@ -150,8 +171,8 @@ namespace BookStoreApiTests.Integration {
             using var clientFactory = new TestFaultyClientFactory<BookStoreApi.Code.AppDataSeeder>();
             var exampleDTO = GetCreateExampleDTO();
             var content = new StringContent(JsonConvert.SerializeObject(exampleDTO), Encoding.UTF8, MediaTypeNames.Application.Json);
-            var client = await clientFactory.GetTestClientAsync(async (client)=> 
-                await AuthorizeMethods.AutorizeAsync(()=>AppDataSeeder.AdminDto, client));
+            var client = await clientFactory.GetTestClientAsync(async (client) =>
+                await AuthorizeMethods.AutorizeAsync(() => AppDataSeeder.AdminDto, client));
             var postResponse = await client.PostAsync("api/Authors", content);
             Assert.AreEqual(HttpStatusCode.InternalServerError, postResponse.StatusCode);
         }
@@ -231,13 +252,31 @@ namespace BookStoreApiTests.Integration {
             Assert.AreEqual(System.Net.HttpStatusCode.MethodNotAllowed, postResponse.StatusCode);
         }
 
+        [TestMethod]
+        public async Task Update422UnprocessableEntity() {
+
+            using var clientFactory = new TestInMemoryAuthentificatedDbServerClientFactory<MockDataSeeder>(() => MockDataSeeder.AdminLogin);
+            var exampleDTO = GetUpdateExampleDTO();
+            var client = await clientFactory.GetTestClientAsync();
+            var authorToUpdateRequest = await client.GetAsync($"api/Authors/{exampleDTO.Id}");
+            var authorToUpdate = JsonConvert.DeserializeObject<AuthorDTO>(await authorToUpdateRequest.Content.ReadAsStringAsync());
+            authorToUpdate.Bio = exampleDTO.Bio;
+            authorToUpdate.Books = new List<BookDTO>() {
+                new BookDTO() { Id = 1, Title = "1-1", Isbn="978-3-16-148420-0"},
+                new BookDTO() { Id = 18, Title = "18-1", Isbn="978-3-16-148421-0"}
+            };
+            var content = new StringContent(JsonConvert.SerializeObject(authorToUpdate), Encoding.UTF8, MediaTypeNames.Application.Json);
+            var postResponse = await client.PutAsync($"api/Authors/{exampleDTO.Id}", content);
+            Assert.AreEqual(HttpStatusCode.UnprocessableEntity, postResponse.StatusCode);
+        }
+
 
         [TestMethod]
         public async Task Update500InternalServerError() {
             using var clientFactory = new TestFaultyClientFactory<BookStoreApi.Code.AppDataSeeder>();
             var exampleDTO = GetUpdateExampleDTO();
             var content = new StringContent(JsonConvert.SerializeObject(exampleDTO), Encoding.UTF8, MediaTypeNames.Application.Json);
-            var client = await clientFactory.GetTestClientAsync((client)=>AuthorizeMethods.AutorizeAsync(()=>AppDataSeeder.AdminDto, client));
+            var client = await clientFactory.GetTestClientAsync((client) => AuthorizeMethods.AutorizeAsync(() => AppDataSeeder.AdminDto, client));
             var postResponse = await client.PutAsync($"api/Authors/{exampleDTO.Id}", content);
             Assert.AreEqual(HttpStatusCode.InternalServerError, postResponse.StatusCode);
         }
@@ -247,7 +286,7 @@ namespace BookStoreApiTests.Integration {
         #region Delete
         [TestMethod]
         public async Task Delete204NoContent() {
-            using var clientFactory = new TestInMemoryAuthentificatedDbServerClientFactory<MockDataSeeder>(()=> MockDataSeeder.AdminLogin);
+            using var clientFactory = new TestInMemoryAuthentificatedDbServerClientFactory<MockDataSeeder>(() => MockDataSeeder.AdminLogin);
             var exampleDTO = GetUpdateExampleDTO();
             var postResponse = await (await clientFactory.GetTestClientAsync()).DeleteAsync($"api/Authors/{exampleDTO.Id}");
             Assert.AreEqual(HttpStatusCode.NoContent, postResponse.StatusCode);
@@ -257,7 +296,7 @@ namespace BookStoreApiTests.Integration {
         public async Task Delete401Unauthorized() {
             using var clientFactory = new TestInMemoryAuthentificatedDbServerClientFactory<AppDataSeeder>();
             var exampleDTO = GetUpdateExampleDTO();
-            var postResponse = await(await clientFactory.GetTestClientAsync()) .DeleteAsync($"api/Authors/46");
+            var postResponse = await (await clientFactory.GetTestClientAsync()).DeleteAsync($"api/Authors/46");
             Assert.AreEqual(HttpStatusCode.Unauthorized, postResponse.StatusCode);
         }
 
@@ -282,7 +321,7 @@ namespace BookStoreApiTests.Integration {
         public async Task Delete500InternalServerError() {
             using var clientFactory = new TestFaultyClientFactory<BookStoreApi.Code.AppDataSeeder>();
             var exampleDTO = GetUpdateExampleDTO();
-            var client = await clientFactory.GetTestClientAsync(async (client)=> await AuthorizeMethods.AutorizeAsync(()=>AppDataSeeder.AdminDto, client));
+            var client = await clientFactory.GetTestClientAsync(async (client) => await AuthorizeMethods.AutorizeAsync(() => AppDataSeeder.AdminDto, client));
             var postResponse = await client.DeleteAsync($"api/Authors/{exampleDTO.Id}");
             Assert.AreEqual(HttpStatusCode.InternalServerError, postResponse.StatusCode);
         }

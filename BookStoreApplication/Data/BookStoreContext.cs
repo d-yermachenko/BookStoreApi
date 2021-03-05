@@ -35,11 +35,23 @@ namespace BookStoreApi.Data {
 
                 entity.Property(e => e.Lastname).HasMaxLength(50);
 
-                entity.HasMany<Book>(b => b.Books).WithMany(a => a.Authors);
+                entity.HasMany<Book>(b => b.Books).WithMany(a => a.Authors)
+                .UsingEntity<BookAuthor>(
+                    ba => ba
+                        .HasOne(a => a.Book)
+                        .WithMany(b => b.BookAuthors)
+                        .HasForeignKey(baid => baid.BookId)
+                        .OnDelete(DeleteBehavior.Cascade),
+                    ab => ab
+                    .HasOne(b => b.Author)
+                    .WithMany(a => a.AuthorBooks)
+                    .HasForeignKey(abid => abid.AuthorId)
+                    .OnDelete(DeleteBehavior.Cascade)
+                    );
             });
 
             modelBuilder.Entity<Book>(entity => {
-                entity.Property(e => e.Image).HasMaxLength(150);
+                entity.Property(e => e.Image).HasMaxLength(int.MaxValue);
 
                 entity.Property(e => e.Isbn)
                     .HasColumnName("ISBN")
@@ -51,7 +63,20 @@ namespace BookStoreApi.Data {
 
                 entity.Property(e => e.Title).HasMaxLength(100);
 
-                entity.HasMany<Author>(b => b.Authors).WithMany(b => b.Books);
+                entity.HasMany<Author>(b => b.Authors)
+                .WithMany(b => b.Books)
+                .UsingEntity<BookAuthor>(
+                    ba => ba
+                    .HasOne(a => a.Author)
+                    .WithMany(ab => ab.AuthorBooks)
+                    .HasForeignKey(abid => abid.AuthorId)
+                    .OnDelete(DeleteBehavior.Cascade),
+                    ab => ab
+                    .HasOne(b => b.Book)
+                    .WithMany(ba => ba.BookAuthors)
+                    .HasForeignKey(baid => baid.BookId)
+                    .OnDelete(DeleteBehavior.Cascade)
+                    );
             });
 
             OnModelCreatingPartial(modelBuilder);

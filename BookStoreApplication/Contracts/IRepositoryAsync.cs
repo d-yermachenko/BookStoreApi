@@ -12,7 +12,7 @@ namespace BookStoreApi.Contracts {
 
         Task<bool> DeleteAsync(TKey id);
 
-        Task<TEntity> FindAsync(TKey id, IEnumerable<Expression<Func<TEntity, object>>> includes = null);
+        Task<TEntity> FindAsync(Expression<Func<TEntity, bool>> idPredicate, IEnumerable<Expression<Func<TEntity, object>>> includes = null);
 
         Task<ICollection<TEntity>> WhereAsync(Expression<Func<TEntity, bool>> filter = null, Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>> order = null, IEnumerable<Expression<Func<TEntity, object>>> includes = null);
 
