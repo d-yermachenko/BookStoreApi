@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using BookStoreApi.Code;
 using BookStoreApi.Contracts;
 using BookStoreApi.Data;
 using BookStoreApi.Data.DTOs;
@@ -46,7 +47,7 @@ namespace BookStoreApi.Controllers {
                 _Logger.LogTrace("Getting authors");
                 var authors = await _BookStore.Authors.WhereAsync(
                     order: x => x.OrderBy(au => au.Lastname).ThenBy(au => au.Firstname),
-                    includes: new Expression<Func<Author, object>>[] { x => x.Books });
+                   includes: null);
                 IList<AuthorDTO> authorsDTOs = _Mapper.Map<List<AuthorDTO>>(authors.ToList());
                 _Logger.LogTrace("Returning authors");
                 if (authorsDTOs.Count == 0)
@@ -121,24 +122,21 @@ namespace BookStoreApi.Controllers {
                 if (similarAuthors.Count > 0)
                     _Logger.LogWarning($"Possible duplicate for author {author.Firstname} {author.Lastname.ToUpper()}");
                 Author writer = _Mapper.Map<Author>(author);
-                if (author.Books?.Count > 0) {
-                    List<Book> books = new List<Book>();
-                    for (int i = 0; i < author.Books.Count; i++) {
-                        var bookId = author.Books.ElementAt(i).Id;
-                        var book = await _BookStore.Books.FindAsync(b => b.Id == bookId);
-                        if (book != null) {
-                            book.Authors = null;
-                            books.Add(book);
-                        }
+                var differences = DataTools.FindDifferences<Book, BookUpsertDTO>(
+                    writer.Books,  author.Books, (o, n)=>o.Id == n.Id );
+                if(differences.InsertedItems?.Count > 0) {
+                    foreach(var newAuthorBook in differences.InsertedItems) {
+                        var authorBook = await _BookStore.Books.FindAsync(b=>b.Id == newAuthorBook.Id);
+                        if (authorBook != null)
+                            writer.AuthorBooks.Add(new BookAuthor() { Author = writer, BookId = authorBook.Id, Book = authorBook });
                         else {
-                            string message = $"Failed to find book with id {bookId}";
+                            string message = $"Failed to find book with id {newAuthorBook.Id}";
                             _Logger.LogWarning(message);
                             return StatusCode(StatusCodes.Status422UnprocessableEntity, message);
                         }
                     }
-                    writer.Books = books;
                 }
-
+                
                 var isSucceed = await _BookStore.Authors.CreateAsync(writer);
                 isSucceed &= await _BookStore.SaveData();
                 if (!isSucceed) {
@@ -180,27 +178,28 @@ namespace BookStoreApi.Controllers {
                 }
                 if (!ModelState.IsValid)
                     return StatusCode(StatusCodes.Status400BadRequest, ModelState);
-                var authorToUpdate = await _BookStore.Authors.FindAsync(idPredicate: (x) => x.Id == authorId);
+                var authorToUpdate = await _BookStore.Authors.FindAsync(
+                    idPredicate: (x) => x.Id == authorId,
+                    includes: new Expression<Func<Author, object>>[] { x=>x.Books } ); 
                 if (authorToUpdate == null)
                     return NotFound($"Unable to find author to update");
-                authorToUpdate = _Mapper.Map<AuthorUpsertDTO, Author>(author, authorToUpdate);
-                if (author.Books?.Count > 0) {
-                    List<Book> books = new List<Book>();
-                    for (int i = 0; i < author.Books.Count; i++) {
-                        var bookId = author.Books.ElementAt(i).Id;
-                        var book = await _BookStore.Books.FindAsync(b => b.Id == bookId);
-                        if (book != null) {
-                            book.Authors = null;
-                            books.Add(book);
-                        }
+                var differences = DataTools.FindDifferences<Book, BookUpsertDTO>(
+                   authorToUpdate.Books, author.Books, (o, n) => o.Id == n.Id);
+                if (differences.InsertedItems?.Count > 0) {
+                    foreach (var newAuthorBook in differences.InsertedItems) {
+                        var authorBook = await _BookStore.Books.FindAsync(b => b.Id == newAuthorBook.Id);
+                        if (authorBook != null)
+                            authorToUpdate.AuthorBooks.Add(new BookAuthor() { Author = authorToUpdate, AuthorId = authorToUpdate.Id, BookId = authorBook.Id, Book = authorBook }); 
                         else {
-                            string message = $"Failed to find book with id {bookId}";
+                            string message = $"Failed to find book with id {newAuthorBook.Id}";
                             _Logger.LogWarning(message);
                             return StatusCode(StatusCodes.Status422UnprocessableEntity, message);
                         }
                     }
-                    authorToUpdate.Books = books;
+                    foreach (var removedAuthorBook in differences.RemovedItems)
+                        authorToUpdate.Books.Remove(removedAuthorBook);
                 }
+                authorToUpdate = _Mapper.Map<AuthorUpsertDTO, Author>(author, authorToUpdate);
                 bool succeed = await _BookStore.Authors.UpdateAsync(authorToUpdate);
                 succeed &= await _BookStore.SaveData();
                 if (succeed)

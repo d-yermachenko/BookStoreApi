@@ -1,0 +1,137 @@
+﻿@page "/books/delete/{BookId}"
+@attribute [Authorize]
+@inject IStringLocalizer<BooksRepository> localizer;
+@inject IBookRepository _books;
+
+<div class="card-header">
+    <h3 class="card-title">@localizer["View book details"]</h3>
+</div>
+
+<div class="card-body">
+    
+    @if (ModelObtained == null)
+    {
+        <Loading Title="@localizer["Loading book details"]"></Loading>
+    }
+    else if (ModelObtained == false)
+    {
+        <Fail Title="@localizer["Failed to load book details"]"></Fail>
+    }
+    else if (ModelObtained == true)
+    {
+        if (Model != null)
+        {
+            <div class="row">
+                <div class=" col col-md-6">
+                    <table class="table table-responsive">
+                        <tbody>
+                            <tr>
+                                <td>
+                                    <strong>@localizer["Title"]</strong>
+                                </td>
+                                <td>
+                                    @Model.Title
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <strong>@localizer["Authors"]</strong>
+                                </td>
+                                <td>
+                                    <ul>
+                                        @foreach (var author in Model?.Authors)
+                                        {
+                                            <li><a href="/authors/view/@author.Id">@author.Firstname @author.Lastname</a></li>
+                                        }
+                                    </ul>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <strong>@localizer["Year"]</strong>
+                                </td>
+                                <td>
+                                    @Model.Year
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <strong>@localizer["Summary"]</strong>
+                                </td>
+                                <td>
+                                    @Model.Summary
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <strong>@localizer["Isbn"]</strong>
+                                </td>
+                                <td>
+                                    @Model.Isbn
+                                </td>
+                            </tr>
+
+                        </tbody>
+                    </table>
+                </div>
+                <div class="col col-md-4">
+                    <img src="@String.Format("data:{0};base64,{1}", Model.ImageMimeType, Model.Image)" alt="@Model.Title" class="bookPicture" />
+                    <h3 class="text-center text-info">@Model.Price</h3>
+                </div>
+            </div>
+        }
+    }
+    @if (_IsSucceed == true)
+    {
+        <Succeed Title="@_Message" AutoReturnUrl="/books/" AutoReturnDelay="@TimeSpan.FromSeconds(1.5)" ShowReturnButton="true"></Succeed>
+    }
+    else if (_IsSucceed == false)
+    {
+        <Fail Title="@_Message"></Fail>
+    }
+</div>
+<div class="card-footer">
+    <a href="/books/" class="btn btn-outline-secondary">
+        <span class="oi oi-media-skip-backward"></span> @localizer["Back to list"]
+    </a>
+    <button @onclick="RemoveAction" class="btn btn-outline-danger">
+        <span class="oi oi-delete"></span> @localizer["Remove book"]
+    </button> 
+</div>
+
+@code {
+    [Parameter]
+    public string BookId { get; set; }
+
+    private Book Model { get; set; }
+
+    private bool? _IsSucceed = null;
+    private string _Message = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (Int32.TryParse(BookId, out int bookId))
+        {
+            Model = await _books.Get(bookId);
+            ModelObtained = true;
+        }
+        else
+            ModelObtained = false;
+
+    }
+
+    protected async Task RemoveAction()
+    {
+        var result = await _books.Delete(Model.Id);
+        _IsSucceed = result.Succeed;
+        _Message = result.Message;
+    }
+
+
+    private bool? ModelObtained { get; set; } = null;
+
+
+
+}
+
+

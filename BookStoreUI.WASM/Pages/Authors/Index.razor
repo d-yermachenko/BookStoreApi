@@ -1,0 +1,77 @@
+﻿@page "/authors/"
+
+
+@inject IStringLocalizer<AuthorsRepository> localizer;
+@inject IAuthorsRepository _authors;
+<div class="card-header">
+    <h3 class="card-header">@localizer["Authors"]</h3>
+</div>
+
+<div class="card-body">
+    @if (Model == null)
+    {
+        <Loading Title="@localizer["Preparing data..."]" />
+    }
+    else
+    {
+        <AuthorizeView Policy="elementsCreation">
+            <a href="authors/create/" class="btn btn-primary">
+                <span class="oi oi-plus"></span> @localizer["Create author"]
+            </a>
+        </AuthorizeView>
+        if (Model?.Count > 0)
+        {
+            <table class="table table-responsive table-responsive-lg">
+                <thead>
+                    <tr>
+                        <td>First name</td>
+                        <td>Last name</td>
+                        <td>Action</td>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (Author author in Model)
+                    {
+                        <tr>
+                            <td>@author.Firstname</td>
+                            <td>@author.Lastname</td>
+                            <td>
+                                <a class="btn btn-primary" href="/authors/view/@author.Id">
+                                    <span class="oi oi-book">View</span>
+                                </a>
+                                <AuthorizeView Policy="elementsEdition">
+                                    <a class="btn btn-warning" href="/authors/edit/@author.Id">
+                                        <span class="oi oi-pencil">Edit</span>
+                                    </a>
+                                </AuthorizeView>
+                                <AuthorizeView Policy="elementsDeleting">
+                                    <a class="btn btn-danger" href="/authors/delete/@author.Id">
+                                        <span class="oi oi-trash">Delete</span>
+                                    </a>
+                                </AuthorizeView>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+        else
+        {
+            <Loading Title="@localizer["There is no authors in data store, please create one or few"]"></Loading>
+        }
+    }
+
+</div>
+
+
+
+
+@code {
+
+    IList<Author> Model;
+
+    protected async override Task OnInitializedAsync()
+    {
+        Model = (await _authors.Get()).ToList();
+    }
+}

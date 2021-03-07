@@ -1,0 +1,53 @@
+﻿@page "/Login"
+@using Data.Models;
+@using Microsoft.Extensions.Localization;
+
+@inject IAuthentificationRepository _AuthRepository;
+@inject NavigationManager _NavManager;
+@inject IStringLocalizer<AuthentificationRepository> localizer;
+
+
+<div class="card">
+    <h5 class="card-title">@localizer["Login"]</h5>
+    @if (Responce != null)
+    {
+        if (!Responce.Succeed)
+        {
+            <Fail Title="@localizer[Responce.Message]"/>
+        }
+        else
+        {
+            <Succeed Title="@localizer[Responce.Message]" AutoReturnUrl="/" AutoReturnDelay=TimeSpan.FromSeconds(1.5) 
+                     ShowReturnButton="true"/>
+        }
+    }
+    <h6 class="card-subtitle mb-2 text-muted">@localizer["Please insert user details"]</h6>
+    <div class="card-body">
+        <EditForm Model="Model" OnValidSubmit="HandleLogin">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+            <div class="form-group">
+                <label for="userName">@localizer["User email"]</label>
+                <InputText Id="userName" class="form-control" @bind-Value="Model.Login" />
+                <ValidationMessage For="@(()=>Model.Login)"></ValidationMessage>
+            </div>
+            <div class="form-group">
+                <label for="userPassword">@localizer["Password"]</label>
+                <InputText Id="userPassword" type="password" class="form-control" @bind-Value="Model.Password" />
+                <ValidationMessage For="@(()=>Model.Password)"></ValidationMessage>
+            </div>
+            <button type="submit" class="btn btn-primary btn-block">@localizer["Submit"]</button>
+        </EditForm>
+    </div>
+</div>
+
+@code {
+    private UserLoginDTO Model = new UserLoginDTO();
+    private RepositoryResponce Responce = null;
+
+    private async Task HandleLogin()
+    {
+        Responce = await _AuthRepository.Login(Model);
+    }
+
+}

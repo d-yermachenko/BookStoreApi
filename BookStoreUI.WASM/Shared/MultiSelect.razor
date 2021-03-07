@@ -1,0 +1,118 @@
+﻿<!--This is custom made on the kneel chackbox multiselect which not pretends to be the thruth in last instance-->
+@typeparam TEntry;
+
+<div class="dropdown @Show" @onfocusout="()=>ToogleShow()">
+    <a class="btn btn-primary" @onclick="ListOnClick"
+       aria-haspopup="true" aria-expanded="@(!String.IsNullOrEmpty(Show))">@Title<span class="oi @Icon"></span></a>
+    <div class="dropdown-menu @Show">
+        @{
+            foreach (var item in _Selection)
+            {
+                <div class="dropdown-item">
+                    <input type="checkbox" checked="@item.Selected" @onchange="(e)=>OnSelectionChange(e, item)" /> @item.Representation
+                </div>
+            }
+        }
+    </div>
+</div>
+
+@code {
+
+    /// <summary>
+    /// Element alredy existent in collection
+    /// </summary>
+    [Parameter]
+    public IList<TEntry> Items
+    {
+        get;
+        set;
+    }
+
+    [Parameter]
+    public EventCallback<IList<TEntry>> ItemsChanged { get; set; }
+
+    /// <summary>
+    /// Allows get string from element
+    /// </summary>
+    [Parameter]
+    public Func<TEntry, string> CaptionGetter { get; set; }
+
+    [Parameter]
+    public Func<TEntry, TEntry, bool> EqualityGetter { get; set; } = null;
+
+
+    /// <summary>
+    /// Source
+    /// </summary>
+    [Parameter]
+    public IList<TEntry> Source { get; set; }
+
+    /// <summary>
+    /// Title of element
+    /// </summary>
+    [Parameter]
+    public string Title { get; set; }
+
+    private string Show { get; set; } = "";
+    private string Icon { get; set; } = "oi-arrow-circle-bottom";
+
+
+
+
+    private List<MultiSelectItem<TEntry>> _Selection;
+
+    internal class MultiSelectItem<TSelectItem> {
+        public bool Selected { get; set; }
+
+        public string Representation { get; set; }
+
+        public TSelectItem CollectionItem { get; set; }
+    }
+
+
+    protected override Task OnInitializedAsync()
+    {
+        _Selection = new List<MultiSelectItem<TEntry>>();
+        foreach (TEntry item in Source)
+        {
+            MultiSelectItem<TEntry> multiselectionItem = new MultiSelectItem<TEntry>()
+            {
+                Representation = CaptionGetter?.Invoke(item),
+                CollectionItem = item
+
+            };
+            if (EqualityGetter != null)
+                multiselectionItem.Selected = Items.Any(sit => EqualityGetter(multiselectionItem.CollectionItem, sit));
+            _Selection.Add(multiselectionItem);
+        }
+        return Task.CompletedTask;
+    }
+
+    protected Task ToogleShow()
+    {
+        if (String.IsNullOrEmpty(Show))
+        {
+            Show = "show";
+            Icon = "oi-arrow-circle-top";
+        }
+        else
+        {
+            Show = "";
+            Icon = "oi-arrow-circle-bottom";
+        }
+
+        return Task.CompletedTask;
+    }
+
+    protected Task ListOnClick(MouseEventArgs args) => ToogleShow();
+
+
+    private async Task OnSelectionChange(object arg, MultiSelectItem<TEntry> item)
+    {
+        item.Selected = !item.Selected;
+        Items = _Selection.Where(x => x.Selected)
+            .Select(itm => itm.CollectionItem)
+            .ToList();
+        await ItemsChanged.InvokeAsync(Items);
+    }
+}

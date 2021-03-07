@@ -1,0 +1,120 @@
+﻿@page "/authors/delete/{Id}"
+@attribute [Authorize(Policy ="elementsDeleting")]
+@inject IAuthorsRepository _repository;
+@inject NavigationManager _navManager;
+@inject IStringLocalizer<AuthorsRepository> localizer;
+
+<div class="card-header">
+    <h3>@localizer["Are you sure that you want to delete this record?"]</h3>
+</div>
+
+
+@if (Model == null)
+{
+    <Loading Title="@localizer["Getting author"]"/>
+}
+else
+{
+    @if (ModelObtainedSuccesfully == false)
+    {
+        <Fail Title="@localizer["Failed to get author"]"/>
+    }
+    else
+    {
+            <div class="card-body">
+                <h5 class="card-title">@localizer["Details about author"]</h5>
+                <div class="row">
+                    <div class="col col-4">
+                        <table class="table table-responsive-lg">
+                            <tbody>
+                                <tr>
+                                    <td>@localizer["First name"]</td>
+                                    <td>@Model.Firstname</td>
+                                </tr>
+                                <tr>
+                                    <td>@localizer["Last name"]</td>
+                                    <td>@Model.Lastname</td>
+                                </tr>
+                                <tr>
+                                    <td>@localizer["Bio"]</td>
+                                    <td>@Model.Bio</td>
+                                </tr>
+                            </tbody>
+
+                        </table>
+                    </div>
+                    <div class="col-8">
+                        @if (Model.Books?.Count == 0)
+                        {
+                            <div class="alert alert-dismissible alert-primary">
+                                @localizer["No books from this author"]
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5>@localizer["Books"]</h5>
+                                </div>
+                                <div class="card-body">
+                                    <ul class="list-group list-group-flush">
+                                        @foreach (Book book in Model.Books)
+                                        {
+                                            <li class="list-group-item"> @book.Title - @book.Year <span class="badge badge-success">$@book.Price</span> </li>
+                                        }
+
+                                    </ul>
+                                </div>
+                            </div>
+                        }
+
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer">
+                <button @onclick="BackToList" role="navigation" class="btn btn-secondary">
+                    <span class="oi oi-media-step-backward"></span>@localizer["Back to list"]
+                </button>
+                <button @onclick="RemoveRecord" role="main" class="btn btn-danger">
+                    <span class="oi oi-trash"></span>@localizer["Remove author"]
+                </button>
+            </div>
+        
+        if (RepositoryResponce?.Succeed == true)
+        {
+            <Succeed Title="@localizer["Author removed"]" AutoReturnUrl="/authors/" AutoReturnDelay=@TimeSpan.FromSeconds(5) ShowReturnButton="false"/>
+        }
+        else if(RepositoryResponce?.Succeed == false)
+        {
+            <Fail Title="@localizer[RepositoryResponce.Message]"/>
+        }
+    }
+}
+
+
+
+@code {
+    [Parameter]
+    public string Id { get; set; }
+
+    private Author Model { get; set; }
+    private Data.Models.RepositoryResponce RepositoryResponce { get; set; }
+    private bool? ModelObtainedSuccesfully { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (Int32.TryParse(Id, out int authId))
+            Model = await _repository.Get(authId);
+    }
+
+    protected async Task RemoveRecord()
+    {
+        if (Int32.TryParse(Id, out int authId))
+            RepositoryResponce = await _repository.Delete(authId);
+    }
+
+    private Task BackToList(object sender)
+    {
+        return Task.Run(() => _navManager.NavigateTo("/authors/"));
+    }
+}

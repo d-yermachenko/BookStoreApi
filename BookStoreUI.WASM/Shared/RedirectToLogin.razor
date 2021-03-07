@@ -1,0 +1,17 @@
+﻿
+<h3>RedirectToLogin</h3>
+
+@code {
+    [Inject]
+    protected NavigationManager _NavigationManager { get; set; }
+
+        protected override Task OnInitializedAsync()
+        {
+            _NavigationManager.NavigateTo("login");
+            return base.OnInitializedAsync();
+        }
+
+
+
+
+}

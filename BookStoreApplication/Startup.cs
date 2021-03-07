@@ -41,6 +41,12 @@ namespace BookStoreApplication {
             services.AddLocalization(options => {
                 options.ResourcesPath = "Resources";
             });
+            services.AddCors(o => {
+                o.AddPolicy("ApiPolicy",
+                    builder => builder.AllowAnyOrigin()
+                    .AllowAnyMethod()
+                    .AllowAnyHeader());
+            });
             services.AddDefaultIdentity<AppUser>(options => options.SignIn.RequireConfirmedAccount = false)
                 .AddRoles<AppRole>()
                 .AddEntityFrameworkStores<BookStoreApi.Data.BookStoreIdentityDbContext>()
@@ -58,7 +64,7 @@ namespace BookStoreApplication {
             services.AddControllers().AddNewtonsoftJson(options => {
                 options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore;
                 options.SerializerSettings.MaxDepth = 1;
-            }); ;
+            });
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 .AddJwtBearer(o => { o.TokenValidationParameters = new TokenValidationParameters() {
                     ValidateIssuer = false,
@@ -97,6 +103,7 @@ namespace BookStoreApplication {
                 setupAction.RoutePrefix = "";
             });
             app.UseHttpsRedirection();
+            app.UseCors("ApiPolicy");
             app.UseRouting();
             app.UseAuthentication();
             app.UseAuthorization();

@@ -1,0 +1,123 @@
+﻿@page "/authors/view/{IdValue}"
+@inject IAuthorsRepository _repository;
+@inject NavigationManager _navManager;
+@inject IStringLocalizer<AuthorsRepository> localizer;
+<div class="card-header">
+    <h3 class="card-header">@localizer["Details about authors"]</h3>
+</div>
+
+@if (Author.Item1 == null)
+{
+    <Loading Title="@localizer["Getting author"]" />
+
+}
+else
+{
+    @if (Author.Item1 == false)
+    {
+        <Fail Title="@localizer["Failed to get authors"]" />
+
+    }
+    else
+    {
+        <div class="card-body">
+            <h5 class="card-title">@localizer["Details about author"]</h5>
+            <div class="row">
+                <div class="col col-4">
+                    <table class="table table-responsive-lg">
+                        <tbody>
+                            <tr>
+                                <td>@localizer["First name"]</td>
+                                <td>@Author.Item2.Firstname</td>
+                            </tr>
+                            <tr>
+                                <td>@localizer["Last name"]</td>
+                                <td>@Author.Item2.Lastname</td>
+                            </tr>
+                            <tr>
+                                <td>@localizer["Bio"]</td>
+                                <td>@Author.Item2.Bio</td>
+                            </tr>
+                        </tbody>
+
+                    </table>
+                </div>
+                <div class="col-8">
+                    @if (Author.Item2.Books?.Count == 0)
+                    {
+                        <div class="alert alert-dismissible alert-primary">
+                            @localizer["No books from this author"]
+                        </div>
+                    }
+                    else
+                    {
+                        <h5> @localizer["Books"]</h5>
+                        <ul class="list-unstyled">
+                            @foreach (Book book in Author.Item2.Books)
+                            {
+                                <li class="media">
+                                    <img class="align-self-lg-start mr-3" alt="@book.Title" src="@book.Thumbnail" />
+                                    <div class="media-body">
+                                        <h5>@book.Title <span class="badge badge-info">@book.Price</span></h5>
+                                        <p>@book.Summary</p>
+                                        <p>@book.Isbn</p>
+                                    </div>
+                                </li>
+                            }
+                            </ul>
+
+                            }
+
+                    </div>
+            </div>
+        </div>
+        <div class="card-footer">
+            <button @onclick="BackToList" class="btn btn-outline-secondary"><span class="oi oi-media-step-backward"></span></button>
+        </div>
+    }
+}
+
+
+
+@code {
+    [Parameter]
+    public string IdValue { get; set; }
+
+    private Tuple<bool?, Author> Author = Tuple.Create<bool?, Author>(null, null);
+
+    public async Task<Author> GetAuthor(string idValue)
+    {
+        Author result = null;
+        if (int.TryParse(idValue, out int id))
+        {
+            result = await _repository.Get(id);
+        }
+        else
+        {
+            var authors = _repository.Get().Result;
+            var correspondentAuthors = authors.Where(x => x.Firstname.Contains(idValue) || x.Lastname.Contains(idValue));
+            if (correspondentAuthors.Count() > 0)
+                result = correspondentAuthors.First();
+        }
+
+        return result;
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            Author = Tuple.Create<bool?, Author>(true, await GetAuthor(IdValue));
+        }
+        catch (AggregateException)
+        {
+            Author = Tuple.Create<bool?, Author>(false, null);
+        }
+    }
+
+    private Task BackToList(object sender)
+    {
+        return Task.Run(() => _navManager.NavigateTo("/authors/"));
+    }
+
+}

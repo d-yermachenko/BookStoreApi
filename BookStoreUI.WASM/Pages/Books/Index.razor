@@ -1,6 +1,6 @@
 ﻿@page "/books/"
 @attribute [Authorize]
-@inject IStringLocalizer<BookStoreUI.Services.BooksRepository> localizer;
+@inject IStringLocalizer<BooksRepository> localizer;
 @inject IBookRepository _books;
 <div class="card-header">
     <h3 class="card-header">@localizer["List of books"]</h3>
