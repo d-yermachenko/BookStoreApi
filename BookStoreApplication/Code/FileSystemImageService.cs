@@ -61,7 +61,7 @@ namespace BookStoreApi.Code {
         }
 
         private string GetLocation() {
-            string defaultLocation = Path.Combine(_Environement.ContentRootPath, "Uploads");
+            string defaultLocation = Path.Combine(_Environement.ContentRootPath, "uploads");
             return _Configuration.GetValue<string>("Images:Location", defaultLocation);
         }
 
@@ -70,7 +70,7 @@ namespace BookStoreApi.Code {
             string fileName = string.Empty;
             bool fileExists = true;
             while (fileExists) {
-                fileName = Path.GetRandomFileName();
+                fileName = Path.GetFileNameWithoutExtension(Path.GetRandomFileName());
                 if (!String.IsNullOrWhiteSpace(extension))
                     fileExists = File.Exists(Path.Combine(location, fileName + "." + extension));
                 else

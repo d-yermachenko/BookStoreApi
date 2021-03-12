@@ -257,7 +257,11 @@ namespace BookStoreApi.Controllers {
             }
         }
 
-
+        /// <summary>
+        /// Removes book by its id
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         [HttpDelete("{id}")]
         [Authorize(Roles = "Administrator")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
@@ -265,7 +269,7 @@ namespace BookStoreApi.Controllers {
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> Delete(int id) {
+        public async Task<IActionResult> Delete([FromBody]int id) {
             _Logger.LogTrace($"Attempting to remove book # {id}");
             try {
                 if (id <= 0)

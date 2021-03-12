@@ -25,15 +25,16 @@ namespace BookStoreApiTests.TestServers {
 
 
         protected override TestServer CreateServer() {
+            IConfiguration config = ConfigurationProvider.BuildBearerConfiguration();
             return new TestServer(new WebHostBuilder()
                                      .UseStartup<BookStoreApplication.Startup>()
-                                     .UseConfiguration(ConfigurationProvider.BuildBearerConfiguration())
+                                     .UseConfiguration(config)
                                      .ConfigureTestServices((services) => {
                                          services.AddSingleton(provider => {
                                              var bookStoreIdentityDbOptions = new DbContextOptionsBuilder<BookStoreIdentityDbContext>()
                                             .UseInMemoryDatabase("IMBookStoreIdentity")
                                             .Options;
-                                             var bookStoreIdentityDbContext = new BookStoreIdentityDbContext(bookStoreIdentityDbOptions);
+                                             var bookStoreIdentityDbContext = new BookStoreIdentityDbContext(bookStoreIdentityDbOptions, config);
                                              bookStoreIdentityDbContext.Database.EnsureDeleted();
                                              return bookStoreIdentityDbContext;
                                          });

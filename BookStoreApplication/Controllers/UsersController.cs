@@ -128,7 +128,7 @@ namespace BookStoreApi.Controllers {
         }
         private async Task<string> GenerateBearerToken(AppUser user) {
             string result = string.Empty;
-            SecurityKey key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_Configuration.GetValue<string>("Jwt:Key")));
+            SecurityKey key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_Configuration.GetValue<string>("JwtKey")));
             if (!TimeSpan.TryParse(_Configuration.GetValue<string>("Jvt:Validity"), out TimeSpan validity))
                 validity = TimeSpan.FromDays(1);
             var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha384);

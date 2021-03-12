@@ -213,6 +213,11 @@ namespace BookStoreApi.Controllers {
             }
         }
 
+        /// <summary>
+        /// Removes author by his id
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         [HttpDelete("{id}")]
         [Authorize(Roles = "Administrator")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]

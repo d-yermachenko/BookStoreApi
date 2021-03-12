@@ -51,7 +51,7 @@ namespace BookStoreApplication {
                 .AddRoles<AppRole>()
                 .AddEntityFrameworkStores<BookStoreApi.Data.BookStoreIdentityDbContext>()
                 .AddDefaultTokenProviders();
-            services.AddLogging();
+            //services.AddLogging();
             services.AddSwaggerGen(setup => {
                 setup.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo() {
                     Title = "Book Store api",
@@ -73,7 +73,7 @@ namespace BookStoreApplication {
                     ValidateIssuerSigningKey = false,
                     ValidIssuer = Configuration.GetValue<string>("Jwt:Issuer"),
                     ValidAudience = Configuration.GetValue<string>("Jwt:Issuer"),
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration.GetValue<string>("Jwt:Key")))
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration.GetValue<string>("JwtKey")))
                 }; 
                 });
 
@@ -96,7 +96,6 @@ namespace BookStoreApplication {
                 // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             }
-
             app.UseSwagger();
             app.UseSwaggerUI(setupAction => {
                 setupAction.SwaggerEndpoint("/swagger/v1/swagger.json", "Book Store api");

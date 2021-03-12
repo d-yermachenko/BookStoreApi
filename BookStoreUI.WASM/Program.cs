@@ -28,6 +28,7 @@ namespace BookStoreUI.WASM {
                 BaseAddress = new Uri(builder.Configuration.GetValue<string>
                 (ConventionalUrls.BaseUrlConfigurationKey, builder.HostEnvironment.BaseAddress)),
             });
+
             builder.Services.AddBlazoredLocalStorage();
             builder.Services.AddTransient<IHttpRequestMessageProviderAsync, HttpRequestMessageProvider>();
             builder.Services.AddTransient<IAuthentificationRepository, AuthentificationRepository>();
@@ -60,7 +61,7 @@ namespace BookStoreUI.WASM {
 
         public static IDictionary<string, string> GetInMemoryConfiguration() {
             Dictionary<string, string> config = new Dictionary<string, string> {
-                { Data.ConventionalUrls.BaseUrlConfigurationKey, "https://localhost:44317/" }
+                { Data.ConventionalUrls.BaseUrlConfigurationKey, "https://dyobookstoreapi.azurewebsites.net/" }
 
             };
             return config;

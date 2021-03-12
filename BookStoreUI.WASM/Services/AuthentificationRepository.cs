@@ -18,7 +18,7 @@ using System.Threading.Tasks;
 
 namespace BookStoreUI.WASM.Services {
     public class AuthentificationRepository : Contracts.IAuthentificationRepository {
-        private readonly string apiUrl;
+        private readonly string _ApiUrl;
         private readonly HttpClient _Client;
         private readonly ILocalStorageService _LocalStorage;
         private readonly AuthenticationStateProvider _AuthenticationStateProvider;
@@ -30,7 +30,7 @@ namespace BookStoreUI.WASM.Services {
             AuthenticationStateProvider authenticationStateProvider) {
             _Configuration = configuration;
             _Client = httpClient;
-            apiUrl = configuration.GetValue<string>(ConventionalUrls.BaseUrlConfigurationKey);
+            _ApiUrl = configuration.GetValue<string>(ConventionalUrls.BaseUrlConfigurationKey);
             _LocalStorage = localStorage;
             _AuthenticationStateProvider = authenticationStateProvider;
         }
@@ -41,7 +41,7 @@ namespace BookStoreUI.WASM.Services {
             if (userData == null)
                 return RepositoryResponce.ArgumentNullResponce;
             System.Net.ServicePointManager.SecurityProtocol = System.Net.SecurityProtocolType.Tls12;
-            string url = Flurl.Url.Combine(apiUrl, ConventionalUrls.RegisterRelativeUrl);
+            string url = Flurl.Url.Combine(_ApiUrl, ConventionalUrls.RegisterRelativeUrl);
             HttpRequestMessage httpRequestMessage = new HttpRequestMessage(HttpMethod.Post, url) {
                 Content = new StringContent(JsonConvert.SerializeObject(userData), Encoding.UTF8, MediaTypeNames.Application.Json)
             };
@@ -53,7 +53,7 @@ namespace BookStoreUI.WASM.Services {
             if (userData == null)
                 return RepositoryResponce.ArgumentNullResponce;
             System.Net.ServicePointManager.SecurityProtocol = System.Net.SecurityProtocolType.Tls12;
-            string url = Flurl.Url.Combine(apiUrl, ConventionalUrls.LoginRelativeUrl);
+            string url = Flurl.Url.Combine(_ApiUrl, ConventionalUrls.LoginRelativeUrl);
             HttpRequestMessage httpRequestMessage = new HttpRequestMessage(HttpMethod.Post, url) {
                 Content = new StringContent(JsonConvert.SerializeObject(userData), Encoding.UTF8, MediaTypeNames.Application.Json)
             };

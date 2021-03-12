@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.Extensions.Configuration;
 
 // Code scaffolded by EF Core assumes nullable reference types (NRTs) are not used or disabled.
 // If you have enabled NRTs for your project, then un-comment the following line:
@@ -11,17 +12,15 @@ using Microsoft.EntityFrameworkCore.Metadata;
 namespace BookStoreApi.Data {
     public partial class BookStoreContext : DbContext {
 
-        public BookStoreContext() : base() {
+        private readonly IConfiguration _AppConfiguration;
 
+        public BookStoreContext(IConfiguration configuration) : base() {
+            _AppConfiguration = configuration;
         }
 
-        public BookStoreContext(DbContextOptions<BookStoreContext> options) : base(options) {
-
+        public BookStoreContext(DbContextOptions<BookStoreContext> options, IConfiguration configuration) : base(options) {
+            _AppConfiguration = configuration;
         }
-
-        /*public BookStoreContext(DbContextOptions options) : base(options) {
-
-        }*/
 
         public virtual DbSet<Author> Authors { get; set; }
         public virtual DbSet<Book> Books { get; set; }
@@ -30,6 +29,9 @@ namespace BookStoreApi.Data {
 
         protected override void OnModelCreating(ModelBuilder modelBuilder) {
             base.OnModelCreating(modelBuilder);
+            string dataSchema = _AppConfiguration.GetValue<String>("DbContext:DataSchema", String.Empty);
+            if (!String.IsNullOrEmpty(dataSchema))
+                modelBuilder.HasDefaultSchema(dataSchema);
             modelBuilder.Entity<Author>(entity => {
                 entity.Property(e => e.Firstname).HasMaxLength(50);
 

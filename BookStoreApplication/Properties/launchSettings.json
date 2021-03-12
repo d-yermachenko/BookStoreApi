@@ -12,6 +12,7 @@
       "commandName": "IISExpress",
       "launchBrowser": true,
       "environmentVariables": {
+        "VaultUri": "__",
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
     },

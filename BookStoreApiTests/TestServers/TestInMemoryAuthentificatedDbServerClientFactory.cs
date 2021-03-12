@@ -60,9 +60,10 @@ namespace BookStoreApiTests.TestServers {
         }
 
         protected override TestServer CreateServer() {
+            var config = ConfigurationProvider.BuildBearerConfiguration();
             return new TestServer(new WebHostBuilder()
                                     .UseStartup<BookStoreApplication.Startup>()
-                                    .UseConfiguration(ConfigurationProvider.BuildBearerConfiguration())
+                                    .UseConfiguration(config)
                                     .ConfigureTestServices((services) => {
                                         //https://github.com/aspnet/Hosting/issues/1012
 
@@ -70,7 +71,7 @@ namespace BookStoreApiTests.TestServers {
                                             var bookStoreDbOptions = new DbContextOptionsBuilder<BookStoreContext>()
                                            .UseInMemoryDatabase("IMBookStore")
                                            .Options;
-                                            var bookStoreDbContext = new MockBookStoreInMemoryContext(bookStoreDbOptions);
+                                            var bookStoreDbContext = new MockBookStoreInMemoryContext(bookStoreDbOptions, config);
                                             bookStoreDbContext.Database.EnsureDeleted();
                                             return bookStoreDbContext;
                                         });
@@ -79,7 +80,7 @@ namespace BookStoreApiTests.TestServers {
                                             var bookStoreIdentityDbOptions = new DbContextOptionsBuilder<BookStoreIdentityDbContext>()
                                            .UseInMemoryDatabase("IMBookStoreIdentity")
                                            .Options;
-                                            var bookStoreIdentityDbContext = new BookStoreIdentityDbContext(bookStoreIdentityDbOptions);
+                                            var bookStoreIdentityDbContext = new BookStoreIdentityDbContext(bookStoreIdentityDbOptions, config);
                                             bookStoreIdentityDbContext.Database.EnsureDeleted();
                                             return bookStoreIdentityDbContext;
                                         });

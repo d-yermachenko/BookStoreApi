@@ -11,39 +11,38 @@
 </div>
 @if (_IsSucceed == true)
 {
-    <Succeed AutoReturnUrl="/books/" ShowReturnButton="true" Title="@localizer["Book created successfully"]"
-             AutoReturnDelay="@TimeSpan.FromSeconds(2.5)" />
+<Succeed AutoReturnUrl="/books/" ShowReturnButton="true" Title="@localizer["Book created successfully"]"
+         AutoReturnDelay="@TimeSpan.FromSeconds(2.5)" />
 }
 else
 {
     if (_IsSucceed == false)
     {
-        <Fail Title="@localizer["Failed to create the book"]"></Fail>
+<Fail Title="@localizer["Failed to create the book"]"></Fail>
     }
 
 
-    <EditForm OnValidSubmit="OnValidSubmit" Model="Model">
-        <div class="card-body">
-            
-            <DataAnnotationsValidator />
-            <ValidationSummary />
-            <div class="form-group">
-                <label for="title">@localizer["Title"]</label>
-                <InputText @bind-Value="Model.Title" id="title" class="form-control"></InputText>
-            </div>
-            <div class="form-group">
-                <label for="isbn">@localizer["ISBN"]</label>
-                <InputText @bind-Value="Model.Isbn" id="isbn" class="form-control"></InputText>
-            </div>
-            <div class="form-group">
-                <label for="isbn">@localizer["Price"]</label>
-                <InputNumber @bind-Value="Model.Price" id="price" class="form-control"></InputNumber>
-            </div>
-            <div class="form-group">
-                <label for="isbn">@localizer["Book cover"]</label>
-                <InputFile id="bookCover" OnChange="OnInputFileChange" class="form-control"></InputFile>
-                <button id="bookClearImage" @onclick="ClearImage" class="btn btn-danger">@localizer["Remove image"]</button>
-                <button id="bookResetImage" @onclick="ResetImage" class="btn btn-info">@localizer["Reset image"]</button>
+<EditForm OnValidSubmit="OnValidSubmit" Model="Model">
+    <div class="card-body">
+
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+        <div class="form-group">
+            <label for="title">@localizer["Title"]</label>
+            <InputText @bind-Value="Model.Title" id="title" class="form-control"></InputText>
+        </div>
+        <div class="form-group">
+            <label for="isbn">@localizer["ISBN"]</label>
+            <InputText @bind-Value="Model.Isbn" id="isbn" class="form-control"></InputText>
+        </div>
+        <div class="form-group">
+            <label for="isbn">@localizer["Price"]</label>
+            <InputNumber @bind-Value="Model.Price" id="price" class="form-control"></InputNumber>
+        </div>
+        <div class="form-group">
+            <label for="isbn">@localizer["Book cover"]</label>
+            <div class="row">
+                <div class="col-6 border">
                 @if (!String.IsNullOrEmpty(_UploadedFileError))
                 {
                     <Fail Title="@_UploadedFileError" />
@@ -52,24 +51,41 @@ else
                 {
                     <img src="@ModelImageInline" alt="Miniature" class="img-thumbnail bookIcon" />
                 }
-            </div>
-            <div class="form-group">
-                @if (Model?.Authors != null && Authors != null)
-                {
-                    <label for="authors">@localizer["Authors"]</label>
-                    <MultiSelect @bind-Items="Model.Authors" Source="Authors" TEntry="Author" Accessor="GetAutor"
-                                 Title="@localizer["Select authors for this book"]"></MultiSelect>
-                }
+
+                </div>
+                <div class="col-2">
+                    <div class="row">
+                        <div class="col-12">
+                            <InputFile id="bookCover" OnChange="OnInputFileChange" class="form-control"></InputFile>
+                        </div>
+                        <div class="col-12">
+                            <button id="bookClearImage" @onclick="ClearImage" class="btn btn-danger">@localizer["Remove image"]</button>
+                        </div>
+                        <div class="col-12">
+                            <button id="bookResetImage" @onclick="ResetImage" class="btn btn-info">@localizer["Reset image"]</button>
+                        </div>
+                    </div>
+                </div>
             </div>
 
         </div>
-        <div class="card-footer">
-            <a class="btn btn-outline-info" href="/books/"><span class="oi oi-media-skip-backward" />@localizer["Back to list"]</a>
-            <button class="btn btn-primary" type="submit">
-                <span class="oi oi-pencil"></span> @localizer["Create author"]
-            </button>
+        <div class="form-group">
+            @if (Model?.Authors != null && Authors != null)
+                {
+            <label for="authors">@localizer["Authors"]</label>
+            <MultiSelect @bind-Items="Model.Authors" Source="Authors" TEntry="Author" CaptionGetter="GetAutor"
+                         Title="@localizer["Select authors for this book"]"></MultiSelect>
+                }
         </div>
-    </EditForm>
+
+    </div>
+    <div class="card-footer">
+        <a class="btn btn-outline-info" href="/books/"><span class="oi oi-media-skip-backward" />@localizer["Back to list"]</a>
+        <button class="btn btn-primary" type="submit">
+            <span class="oi oi-pencil"></span> @localizer["Create author"]
+        </button>
+    </div>
+</EditForm>
 
 }
 
