@@ -20,6 +20,8 @@ namespace BookStoreApi.Data.DTOs {
         public decimal? Price { get; set; }
 
         public virtual ICollection<Author> Authors { get; set; }
+
+        public ActionsAvalaibility ActionsAvalaibility { get; set; }
     }
 
     public class BookUpsertDTO {
@@ -40,5 +42,7 @@ namespace BookStoreApi.Data.DTOs {
         public decimal? Price { get; set; }
 
         public virtual IList<AuthorUpsertDTO> Authors { get; set; }
+
+        public ActionsAvalaibility ActionsAvalaibility { get; set; }
     }
 }

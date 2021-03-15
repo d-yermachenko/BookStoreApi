@@ -182,7 +182,7 @@ namespace BookStoreUITests.Integration.RepositoryTests {
             }
         }
 
-        [TestMethod]
+        //[TestMethod]
         public async Task TestBooksCreate403Forbidden() {
             try {
                 BookStoreUI.Contracts.IBookRepository booksRepository = new BookStoreUI.Services.BooksRepository(
@@ -285,6 +285,7 @@ namespace BookStoreUITests.Integration.RepositoryTests {
                     messageProvider: new FakeHttpRequestMessageProviderAsync()
                     );
                 var invalidAuthor = NewBookDTO;
+                invalidAuthor.Id = 3;
                 var answer = await booksRepository.Update(invalidAuthor);
                 Assert.AreEqual(StatusCodes.Status403Forbidden, answer.StatusCode);
             }

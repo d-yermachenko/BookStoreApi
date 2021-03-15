@@ -22,6 +22,8 @@ namespace BookStoreApiTests.Integration {
 
 
         #region Login
+
+
         [TestMethod]
         public async Task LoginUserNotFound404() {
             using var clientFactory = new TestInMemoryAuthentificatedDbServerClientFactory<Mocks.MockDataSeeder>();
@@ -84,8 +86,8 @@ namespace BookStoreApiTests.Integration {
                 new FakeSignInManager<AppUser>(), 
                 new FakeUserManager<AppUser>(),
                 ConfigurationProvider.BuildConfiguration(),
-                new Mocks.MockLogger<BookStoreApi.Controllers.UsersController>()
-                
+                new Mocks.MockLogger<BookStoreApi.Controllers.UsersController>(),
+                null
                 );
             var result = (ObjectResult) await userController.Login(new UserLoginDTO() {
                 Login = "admin",

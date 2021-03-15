@@ -21,6 +21,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using BookStoreApi.Data.Authentification;
+using BookStoreApi.Data;
 
 namespace BookStoreApplication {
     public class Startup {
@@ -49,7 +50,7 @@ namespace BookStoreApplication {
             });
             services.AddDefaultIdentity<AppUser>(options => options.SignIn.RequireConfirmedAccount = false)
                 .AddRoles<AppRole>()
-                .AddEntityFrameworkStores<BookStoreApi.Data.BookStoreIdentityDbContext>()
+                .AddEntityFrameworkStores<BookStoreIdentityDbContext>()
                 .AddDefaultTokenProviders();
             //services.AddLogging();
             services.AddSwaggerGen(setup => {
@@ -89,7 +90,6 @@ namespace BookStoreApplication {
             if (env.IsDevelopment()) {
                 app.UseDeveloperExceptionPage();
                 app.UseMigrationsEndPoint();
-
             }
             else {
                 app.UseExceptionHandler("/Error");

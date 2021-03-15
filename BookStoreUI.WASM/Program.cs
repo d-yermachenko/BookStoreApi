@@ -61,7 +61,7 @@ namespace BookStoreUI.WASM {
 
         public static IDictionary<string, string> GetInMemoryConfiguration() {
             Dictionary<string, string> config = new Dictionary<string, string> {
-                { Data.ConventionalUrls.BaseUrlConfigurationKey, "https://dyobookstoreapi.azurewebsites.net/" }
+                { Data.ConventionalUrls.BaseUrlConfigurationKey, "https://localhost:44317/" }
 
             };
             return config;

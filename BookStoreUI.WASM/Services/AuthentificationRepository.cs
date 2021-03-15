@@ -1,4 +1,5 @@
 ﻿using Blazored.LocalStorage;
+using BookStoreUI.WASM.Contracts;
 using BookStoreUI.WASM.Data;
 using BookStoreUI.WASM.Data.DTOs;
 using BookStoreUI.WASM.Data.Models;
@@ -12,6 +13,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Net.Mime;
 using System.Text;
 using System.Threading.Tasks;
@@ -58,18 +60,42 @@ namespace BookStoreUI.WASM.Services {
                 Content = new StringContent(JsonConvert.SerializeObject(userData), Encoding.UTF8, MediaTypeNames.Application.Json)
             };
             var responce = await _Client.SendAsync(httpRequestMessage);
-            if(!responce.IsSuccessStatusCode)
+            if (!responce.IsSuccessStatusCode)
                 return RepositoryResponce.StatusCodeResponce(responce.StatusCode);
             else {
                 var loginData = JsonConvert.DeserializeObject<Data.DTOs.SessionDataObject>(await responce.Content.ReadAsStringAsync());
                 await _LocalStorage.SetItemAsync(ConventionalKeys.TokenStorageKey, loginData.Token);
                 await ((ApiAuthentificationStateProvider)_AuthenticationStateProvider).LoggedIn();
-                _Client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue(
-                    "bearer", loginData.Token); 
-
+                _Client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(
+                    "bearer", loginData.Token);
                 var reponse = RepositoryResponce.StatusCodeResponce(responce.StatusCode);
                 reponse.Message = loginData.Answer;
                 return reponse;
+            }
+        }
+
+        public async Task<RepositoryResponce> ChangePassword(ChangePasswordDTO changePasswordDto) {
+            if (changePasswordDto == null)
+                return RepositoryResponce.ArgumentNullResponce;
+            System.Net.ServicePointManager.SecurityProtocol = System.Net.SecurityProtocolType.Tls12;
+            string url = Flurl.Url.Combine(_ApiUrl, ConventionalUrls.ChangePasswordRelativeUrl);
+            try {
+                _Client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(
+                    scheme: "bearer",
+                    parameter: await _LocalStorage.GetItemAsStringAsync(ConventionalKeys.TokenStorageKey)
+                    );
+                HttpRequestMessage httpRequestMessage = new HttpRequestMessage(HttpMethod.Post, url) {
+                    Content = new StringContent(JsonConvert.SerializeObject(changePasswordDto), Encoding.UTF8, MediaTypeNames.Application.Json)
+                };
+                var responce = await _Client.SendAsync(httpRequestMessage);
+                PasswordActionAnswer answer = JsonConvert.DeserializeObject<PasswordActionAnswer>(await responce.Content.ReadAsStringAsync());
+
+                var repositoryReponce = RepositoryResponce.StatusCodeResponce(responce.StatusCode);
+                repositoryReponce.Message = answer.ServerMessage;
+                return repositoryReponce;
+            }
+            catch(Exception e) {
+                return new RepositoryResponce() { Succeed = false, Errror = e.Message };
             }
         }
 

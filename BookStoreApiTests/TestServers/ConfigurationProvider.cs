@@ -15,7 +15,7 @@ namespace BookStoreApiTests.TestServers {
 
         public static IConfiguration BuildBearerConfiguration() {
             Dictionary<string, string> config = new Dictionary<string, string> {
-                { "Jwt:Key", "c8fc66ec-98d2-432b-b224-122d0a6957d6" },
+                { "JwtKey", "c8fc66ec-98d2-432b-b224-122d0a6957d6" },
                 { "Jwt:Issuer", "Book store app" }
             };
             IConfigurationBuilder builder = new ConfigurationBuilder()

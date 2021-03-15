@@ -13,6 +13,7 @@ namespace BookStoreApi.Data
         public Author()
         {
             AuthorBooks = new List<BookAuthor>();
+            Books = new List<Book>();
         }
 
         public int Id { get; set; }
@@ -20,8 +21,10 @@ namespace BookStoreApi.Data
         public string Lastname { get; set; }
         public string Bio { get; set; }
 
-        public virtual ICollection<Book> Books { get; set; }
+        public virtual IList<Book> Books { get; set; }
 
-        public IList<BookAuthor> AuthorBooks { get; set; }
+        public virtual IList<BookAuthor> AuthorBooks { get; set; }
+
+        public string OwnerId { get; set; }
     }
 }

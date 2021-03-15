@@ -2,10 +2,12 @@
 using BookStoreApi.Code;
 using BookStoreApi.Contracts;
 using BookStoreApi.Data;
+using BookStoreApi.Data.Authentification;
 using BookStoreApi.Data.DTOs;
 using BookStoreApi.Data.ModelBinders;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.Extensions.Logging;
@@ -25,15 +27,19 @@ namespace BookStoreApi.Controllers {
         private readonly IBookStoreUnitOfWorkAsync _BookStore;
         private readonly IMapper _Mapper;
         private readonly IImageService _ImageService;
+        private readonly SignInManager<AppUser> _SignInManager;
 
         public BooksController(ILogger<BooksController> logger,
             IBookStoreUnitOfWorkAsync bookStore,
             IMapper mapper,
-            IImageService imageService) {
+            IImageService imageService,
+            SignInManager<AppUser> signInManager
+            ) {
             _Logger = logger;
             _BookStore = bookStore;
             _Mapper = mapper;
             _ImageService = imageService;
+            _SignInManager = signInManager;
         }
 
         private IActionResult InternalError(string message, Exception error = null) {
@@ -68,7 +74,7 @@ namespace BookStoreApi.Controllers {
         /// <param name="book">New book object</param>
         /// <returns></returns>
         [HttpPost]
-        [Authorize(Roles = "Administrator")]
+        [Authorize(Roles = "Administrator,Customer")]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status422UnprocessableEntity)]
@@ -88,7 +94,9 @@ namespace BookStoreApi.Controllers {
                     imageUpload = _ImageService.SetImage(book.Image, cts.Token, String.Empty);
                     book.Image = String.Empty;
                 }
+                var user = await _SignInManager.UserManager.FindByEmailAsync(this.GetCurrentUserEmail());
                 Book bookRecord = _Mapper.Map<Book>(book);
+                bookRecord.OwnerId = user.Id;
                 var differences = DataTools.FindDifferences<BookAuthor, AuthorUpsertDTO>(
                     bookRecord.BookAuthors, book.Authors, (old, nw) => old.AuthorId == nw.Id);
                 foreach (var inserted in differences.InsertedItems) {
@@ -137,13 +145,24 @@ namespace BookStoreApi.Controllers {
         public async Task<IActionResult> GetBooks() {
             _Logger.LogTrace("Getting authors");
             try {
-                var books = await _BookStore.Books.WhereAsync(order: ord => ord.OrderBy(x => x.Title)
-                    , includes: new Expression<Func<Book, object>>[] { incl => incl.Authors });
+                var user = await _SignInManager.UserManager.FindByEmailAsync(this.GetCurrentUserEmail());
+                var books = await _BookStore.Books.WhereAsync(
+                    order: ord => ord.OrderBy(x => x.Title)
+                    , includes: new Expression<Func<Book, object>>[] { incl => incl.Authors }); ;
                 if (books.Count == 0)
                     return BookNotFound("Empty books list");
-                var booksDTOs = _Mapper.Map<IEnumerable<BookDTO>>(books);
+                bool isUserAdmin = !(user == null) && await _SignInManager.UserManager.IsInRoleAsync(user, AppDataSeeder.Administrator);
+                List<BookDTO> bookDTOs = new List<BookDTO>();
+                for(int i = 0; i < books.Count; i++) {
+                    var book = books.ElementAt(i);
+                    if (book != null) {
+                        BookDTO bookDTO = _Mapper.Map<BookDTO>(book);
+                        bookDTO.ActionsAvalaibility = this.GetActionsAvalaibility(book.OwnerId, user?.Id, isUserAdmin);
+                        bookDTOs.Add(bookDTO);
+                    }
+                }
                 _Logger.LogTrace("Succesully got the list of books");
-                return Ok(booksDTOs);
+                return Ok(bookDTOs);
 
             }
             catch (Exception e) {
@@ -163,18 +182,21 @@ namespace BookStoreApi.Controllers {
         public async Task<IActionResult> GetBook(int id) {
             _Logger.LogTrace($"Getting author #{id}");
             try {
-                var book = await _BookStore.Books.FindAsync(idPredicate: (x) => x.Id == id,
+                var book = await _BookStore.Books.FindAsync(
+                    idPredicate: (x) => x.Id == id,
                     includes: new Expression<Func<Book, object>>[] { incl => incl.Authors });
                 if (book == null)
                     return BookNotFound($"Book with id {id} not found in database");
-
-                var booksDTOs = _Mapper.Map<BookDTO>(book);
+                var user = await _SignInManager.UserManager.FindByEmailAsync(this.GetCurrentUserEmail());
+                bool isUserAdmin = !(user == null) && await _SignInManager.UserManager.IsInRoleAsync(user, AppDataSeeder.Administrator);
+                var booksDTO = _Mapper.Map<BookDTO>(book);
+                booksDTO.ActionsAvalaibility = this.GetActionsAvalaibility(book.OwnerId, user?.Id, isUserAdmin);
                 if (!String.IsNullOrWhiteSpace(book.Image)) {
                     var bookData = await _ImageService.GetImage(book.Image);
-                    booksDTOs.Image = bookData.Base64Image;
-                    booksDTOs.ImageMimeType = bookData.MediaType;
+                    booksDTO.Image = bookData.Base64Image;
+                    booksDTO.ImageMimeType = bookData.MediaType;
                 }
-                return Ok(booksDTOs);
+                return Ok(booksDTO);
             }
             catch (Exception e) {
 
@@ -189,7 +211,7 @@ namespace BookStoreApi.Controllers {
         /// <param name="book">Updated book object</param>
         /// <returns>Updated book</returns>
         [HttpPut("{bookId}")]
-        [Authorize(Roles = "Administrator")]
+        [Authorize]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -206,11 +228,16 @@ namespace BookStoreApi.Controllers {
                     return BookBadRequest($"Book id you provided ({bookId}) is inferior of 0 and not exists in database");
                 if (!ModelState.IsValid)
                     return BookBadRequest("Book data not passed the validation", ModelState);
-
+                var user = await _SignInManager.UserManager.FindByEmailAsync(this.GetCurrentUserEmail());
+                var isUserAdministrator = await _SignInManager.UserManager.IsInRoleAsync(user, AppDataSeeder.Administrator);
                 var srcBook = await _BookStore.Books.FindAsync(idPredicate: (x) => x.Id == bookId,
                     includes: new Expression<Func<Book, object>>[] { x => x.BookAuthors });
                 if (srcBook == null)
                     return BookNotFound($"Book id you provided ({bookId}) not found and can not be updated");
+                if (!(srcBook.OwnerId == user.Id || isUserAdministrator )) {
+                    _Logger.LogWarning($"{user.Email} tried edit others book");
+                    return StatusCode(StatusCodes.Status403Forbidden, "Cant edit other's record");
+                }
                 Task<ImageData> imageTask = null;
                 CancellationTokenSource cancellationTokenSource = null;
                 string originalImageName = srcBook.Image;
@@ -269,7 +296,7 @@ namespace BookStoreApi.Controllers {
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> Delete([FromBody]int id) {
+        public async Task<IActionResult> Delete(int id) {
             _Logger.LogTrace($"Attempting to remove book # {id}");
             try {
                 if (id <= 0)
@@ -281,7 +308,12 @@ namespace BookStoreApi.Controllers {
                 }
                 else
                     return NotFound($"Book with id {id} not found");
-
+                var user = await _SignInManager.UserManager.FindByEmailAsync(this.GetCurrentUserEmail());
+                var isUserAdministrator = await _SignInManager.UserManager.IsInRoleAsync(user, AppDataSeeder.Administrator);
+                if (!(user.Id == model.OwnerId || isUserAdministrator)) {
+                    _Logger.LogWarning($"User {user.Email} tried to delete book {model.Title}");
+                    return StatusCode(StatusCodes.Status403Forbidden);
+                }
                 bool success = await _BookStore.Books.DeleteAsync(id);
                 success &= await _BookStore.SaveData();
                 if (success) {

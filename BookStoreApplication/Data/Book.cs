@@ -11,6 +11,7 @@ namespace BookStoreApi.Data
     {
         public Book() {
             BookAuthors = new List<BookAuthor>();
+            Authors = new List<Author>();
         }
 
         public int Id { get; set; }
@@ -24,8 +25,10 @@ namespace BookStoreApi.Data
 
         public decimal? Price { get; set; }
 
-        public virtual ICollection<Author> Authors { get; set; }
+        public virtual IList<Author> Authors { get; set; }
 
-        public IList<BookAuthor> BookAuthors{ get; set; }
+        public virtual IList<BookAuthor> BookAuthors{ get; set; }
+
+        public string OwnerId { get; set; }
     }
 }

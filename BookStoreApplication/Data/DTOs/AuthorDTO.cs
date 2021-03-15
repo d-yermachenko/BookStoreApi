@@ -26,6 +26,8 @@ namespace BookStoreApi.Data.DTOs {
         public string Bio { get; set; }
 
         public ICollection<BookDTO> Books { get; set; }
+
+        public ActionsAvalaibility ActionsAvalaibility { get; set; }
     }
 
     /// <summary>

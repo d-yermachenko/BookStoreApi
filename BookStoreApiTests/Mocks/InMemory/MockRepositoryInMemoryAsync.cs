@@ -12,13 +12,17 @@ namespace BookStoreApiTests.Mocks.InMemory {
         where TInstance : class
         where TKey : IComparable<TKey> {
         private readonly DbSet<TInstance> _Dataset;
+        private readonly Func<TInstance, TInstance> _InstanceCooker;
 
-        public MockRepositoryInMemoryAsync(DbSet<TInstance> inMemoryDbSet) {
+
+        public MockRepositoryInMemoryAsync(DbSet<TInstance> inMemoryDbSet, Func<TInstance, TInstance> prepareMethod) {
             _Dataset = inMemoryDbSet;
+            _InstanceCooker = prepareMethod;
         }
 
         public async Task<bool> CreateAsync(TInstance entity) {
-            var result = _Dataset.Add(entity);
+            var preparesInstance = _InstanceCooker.Invoke(entity);
+            var result = _Dataset.Add(preparesInstance);
             return await Task.FromResult(result.State == EntityState.Added);
         }
 

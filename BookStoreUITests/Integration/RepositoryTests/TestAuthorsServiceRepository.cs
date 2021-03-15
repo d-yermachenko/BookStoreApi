@@ -179,7 +179,7 @@ namespace BookStoreUITests.Integration.RepositoryTests {
             }
         }
 
-        [TestMethod]
+        /*[TestMethod]
         public async Task TestAuthorsCreate403Forbidden() {
             try {
                 BookStoreUI.Services.AuthorsRepository authorsController = new BookStoreUI.Services.AuthorsRepository(
@@ -195,7 +195,7 @@ namespace BookStoreUITests.Integration.RepositoryTests {
             catch (AggregateException ae) {
                 Assert.Fail(ae.Flatten().Message);
             }
-        }
+        }*/
 
         [TestMethod]
         public async Task TestAuthorsCreate500InternalServerError() {
@@ -396,7 +396,7 @@ namespace BookStoreUITests.Integration.RepositoryTests {
                     messageProvider: new FakeHttpRequestMessageProviderAsync()
                     );
                 var answer = await authorsController.Delete(14);
-                Assert.AreEqual(StatusCodes.Status403Forbidden, answer.StatusCode);
+                Assert.AreEqual(StatusCodes.Status404NotFound, answer.StatusCode);
             }
             catch (AggregateException ae) {
                 Assert.Fail(ae.Flatten().Message);

@@ -72,14 +72,14 @@ namespace BookStoreApi.Code {
             _Logger.LogDebug("Seeding roles");
             if (!await roleManager.RoleExistsAsync("Administrator")) {
                 var role = new AppRole {
-                    Name = "Administrator"
+                    Name = Administrator
                 };
                 await roleManager.CreateAsync(role);
             }
 
             if (!await roleManager.RoleExistsAsync("Customer")) {
                 var role = new AppRole {
-                    Name = "Customer"
+                    Name = Customer
                 };
                 await roleManager.CreateAsync(role);
             }
@@ -95,5 +95,9 @@ namespace BookStoreApi.Code {
             Login = "customer1",
             Password = "P@ssword256"
         };
+
+        public static string Administrator => "Administrator";
+
+        public static string Customer => "Customer";
     }
 }

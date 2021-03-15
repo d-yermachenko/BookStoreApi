@@ -71,9 +71,9 @@ namespace BookStoreApiTests.Mocks {
                 Summary = "Another view what happens to civilizations",
                 Authors = new Author[] { iAzymov }
             };
-            aStugatsky.Books = new Book[] { mondayStartsSaturday, hardToBeTheGod };
-            bStugatsky.Books = new Book[] { mondayStartsSaturday, hardToBeTheGod };
-            iAzymov.Books = new Book[] { theGodsThemselves };
+            aStugatsky.Books = new List<Book>{ mondayStartsSaturday, hardToBeTheGod };
+            bStugatsky.Books = new List<Book> { mondayStartsSaturday, hardToBeTheGod };
+            iAzymov.Books = new List<Book> { theGodsThemselves };
             await _BookStore.Authors.CreateAsync(aStugatsky);
             await _BookStore.Authors.CreateAsync(bStugatsky);
             await _BookStore.Authors.CreateAsync(iAzymov);

@@ -24,18 +24,14 @@ using System.Net.Mime;
 using BookStoreApi.Data.Authentification;
 
 namespace BookStoreApiTests.TestServers {
-    public class TestInMemoryAuthentificatedDbServerClientFactory<TDataSeeder> : TestserverClientFactory, ITestClientFactoryAsync, IDisposable
+    public class TestSQLiteAuthentificatedDbServerClientFactory<TDataSeeder> : TestserverClientFactory, ITestClientFactoryAsync, IDisposable
         where TDataSeeder : class, IAppDataSeeder {
 
         private readonly Func<UserLoginDTO> _DtoProvider;
-        private readonly string _BStoreDbName;
-        private readonly string _BIdentityDbName;
 
-       public TestInMemoryAuthentificatedDbServerClientFactory(Func<UserLoginDTO> dtoProvider = null,
-            string bookStoreDbName = "", string bookStoreIdentityDbName = "") : base() {
+
+        public TestSQLiteAuthentificatedDbServerClientFactory(Func<UserLoginDTO> dtoProvider = null) : base() {
             _DtoProvider = dtoProvider;
-            _BStoreDbName = !String.IsNullOrWhiteSpace(bookStoreDbName) ? bookStoreDbName : Path.GetFileNameWithoutExtension(Path.GetRandomFileName());
-            _BIdentityDbName = !String.IsNullOrWhiteSpace(bookStoreIdentityDbName) ? bookStoreIdentityDbName : Path.GetFileNameWithoutExtension(Path.GetRandomFileName());
         }
 
         protected override Task<HttpClient> InitializeTestInfrastruture() {
@@ -73,27 +69,35 @@ namespace BookStoreApiTests.TestServers {
                                         //https://github.com/aspnet/Hosting/issues/1012
                                         services.AddSingleton(provider => {
                                             var bookStoreDbOptions = new DbContextOptionsBuilder<BookStoreContext>()
-                                           .UseInMemoryDatabase(_BStoreDbName)
+                                           .UseSqlite("Data Source=Sharable;Mode=Memory;Cache=Shared", optionsAction => {
+                                               optionsAction.MigrationsHistoryTable("EFMigrations");
+                                            })
+                                           //.UseInMemoryDatabase("IMBookStoreIdentity")
                                            .Options;
-                                            var bookStoreDbContext = new MockBookStoreInMemoryContext(bookStoreDbOptions, config);
-                                            //bookStoreDbContext.Database.EnsureDeleted();
+                                            //var bookStoreDbContext = new MockBookStoreInMemoryContext(bookStoreDbOptions, config);
+                                            var bookStoreDbContext = new BookStoreContext(bookStoreDbOptions, config);
+                                            bookStoreDbContext.Database.EnsureDeleted();
+                                            bookStoreDbContext.Database.EnsureCreated();
+                                            bookStoreDbContext.Database.Migrate();
                                             return bookStoreDbContext;
                                         });
 
                                         services.AddSingleton(provider => {
                                             var bookStoreIdentityDbOptions = new DbContextOptionsBuilder<BookStoreIdentityDbContext>()
-                                           .UseInMemoryDatabase(_BIdentityDbName)
-                                           .Options;
+                                            .UseSqlite("Data Source=Sharable;Mode=Memory;Cache=Shared")
+                                            //.UseInMemoryDatabase("IMBookStoreIdentity")
+                                            .Options;
                                             var bookStoreIdentityDbContext = new BookStoreIdentityDbContext(bookStoreIdentityDbOptions, config);
-                                            //bookStoreIdentityDbContext.Database.EnsureDeleted();
-
+                                            bookStoreIdentityDbContext.Database.EnsureDeleted();
+                                            bookStoreIdentityDbContext.Database.EnsureCreated();
+                                            bookStoreIdentityDbContext.Database.Migrate();
                                             return bookStoreIdentityDbContext;
                                         });
                                         services.AddControllers().AddNewtonsoftJson(options => {
                                             options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore;
                                             options.SerializerSettings.MaxDepth = 2;
                                         });
-                                        services.AddScoped<IBookStoreUnitOfWorkAsync, MockBookStoreInMemoryUnitOfWork>();
+                                        services.AddScoped<IBookStoreUnitOfWorkAsync, EntityBookStoreUoWAsync>();
                                         services.AddTransient<IAppDataSeeder, TDataSeeder>();
                                     }));
         }

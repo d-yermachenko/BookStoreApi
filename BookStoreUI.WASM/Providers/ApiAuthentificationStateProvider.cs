@@ -35,7 +35,6 @@ namespace BookStoreUI.WASM.Providers {
                 return new AuthenticationState(user);
             }
             catch (Exception) {
-
                 return new AuthenticationState(new ClaimsPrincipal());
             }
         }

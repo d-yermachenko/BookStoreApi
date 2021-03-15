@@ -12,6 +12,7 @@ namespace BookStoreUI.WASM.Contracts {
 
         Task<RepositoryResponce> Login(UserLoginDTO loginVM);
 
+        Task<RepositoryResponce> ChangePassword(ChangePasswordDTO changePasswordDto);
         Task Logout();
     }
 }
