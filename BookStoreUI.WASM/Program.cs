@@ -18,10 +18,18 @@ using System.Threading.Tasks;
 
 namespace BookStoreUI.WASM {
     public class Program {
-        public static async Task Main(string[] args)
-        {
+        public static async Task Main(string[] args) {
             var builder = WebAssemblyHostBuilder.CreateDefault(args);
-            builder.Configuration.AddInMemoryCollection(GetInMemoryConfiguration());
+            if (builder.HostEnvironment.IsDevelopment()) {
+                builder.Configuration.AddInMemoryCollection(GetDevConfiguration());
+                builder.Configuration.AddJsonFile("appSettings.json", true);
+                builder.Configuration.AddJsonFile($"appSettings.{builder.HostEnvironment.Environment}.json", true);
+            }
+            else {
+                builder.Configuration.AddInMemoryCollection(GetProductionConfiguration());
+                builder.Configuration.AddJsonFile("appSettings.json", true);
+                builder.Configuration.AddJsonFile($"appSettings.{builder.HostEnvironment.Environment}.json", true);
+            }
             builder.Configuration.Build();
             builder.RootComponents.Add<App>("#app");
             builder.Services.AddScoped(sp => new HttpClient {
@@ -59,9 +67,17 @@ namespace BookStoreUI.WASM {
         }
 
 
-        public static IDictionary<string, string> GetInMemoryConfiguration() {
+        public static IDictionary<string, string> GetDevConfiguration() {
             Dictionary<string, string> config = new Dictionary<string, string> {
                 { Data.ConventionalUrls.BaseUrlConfigurationKey, "https://localhost:44317/" }
+
+            };
+            return config;
+        }
+
+        public static IDictionary<string, string> GetProductionConfiguration() {
+            Dictionary<string, string> config = new Dictionary<string, string> {
+                { Data.ConventionalUrls.BaseUrlConfigurationKey, "https://dyobookstoreapi.azurewebsites.net" }
 
             };
             return config;
