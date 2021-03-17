@@ -22,6 +22,11 @@ namespace BookStoreUI.WASM.Data.DTOs {
 
         public virtual IList<Author> Authors { get; set; }
 
+        /// <summary>
+        /// AvalaibleActions
+        /// </summary>
+        public ActionsAvalaibility ActionsAvalaibility { get; set; }
+
     }
 
 }

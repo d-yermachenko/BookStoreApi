@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 namespace BookStoreUI.WASM.Data.DTOs {
     public class Author {
 
-
         [Display(Name = "Unique identity", Description = "Artificial and application specific number which identifiing")]
         public int Id { get; set; }
 
@@ -25,6 +24,8 @@ namespace BookStoreUI.WASM.Data.DTOs {
         public string Bio { get; set; }
 
         public IList<Book> Books { get; set; }
+
+        public ActionsAvalaibility ActionsAvalaibility { get; set; }
     }
 
 }

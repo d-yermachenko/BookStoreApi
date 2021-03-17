@@ -1,5 +1,4 @@
 ﻿@page "/books/"
-@attribute [Authorize]
 @inject IStringLocalizer<BooksRepository> localizer;
 @inject IBookRepository _books;
 <div class="card-header">
@@ -49,18 +48,53 @@
                                 </ul>
                             </td>
                             <td>
-                                <a href="/books/view/@book.Id" class="btn btn-primary">
-                                    <span class="oi oi-pencil" /> @localizer["View"]
-                                </a>
-                                <AuthorizeView Policy="elementsEdition">
-                                    <a href="/books/edit/@book.Id" class="btn btn-warning">
-                                        <span class="oi oi-pencil" /> @localizer["Edit"]
+                                @if (book?.ActionsAvalaibility?.CanBeViewed == true)
+                                {
+                                    <a href="/books/view/@book.Id" class="btn btn-primary">
+                                        <span class="oi oi-book" /> @localizer["View"]
                                     </a>
+
+                                }
+                                else
+                                {
+                                    <span class="btn btn-secondary">
+                                        <span class="oi oi-book" />   @localizer["View"]
+                                    </span>
+                                }
+
+                                <AuthorizeView Policy="elementsEdition">
+                                    @if (book?.ActionsAvalaibility?.CanBeEdited == true)
+                                    {
+                                        <a href="/books/edit/@book.Id" class="btn btn-warning">
+                                            <span class="oi oi-pencil" /> @localizer["Edit"]
+                                        </a>
+                                    }
+                                    else
+                                    {
+
+                                        <span class="btn btn-secondary">
+                                            <span class="oi oi-pencil" /> @localizer["Edit"]
+                                        </span>
+                                    }
+
+
                                 </AuthorizeView>
                                 <AuthorizeView Policy="elementsDeleting">
-                                    <a href="/books/delete/@book.Id" class="btn btn-danger">
-                                        <span class="oi oi-trash" /> @localizer["Delete"]
-                                    </a>
+                                    @if (book?.ActionsAvalaibility?.CanBeDeleted == true)
+                                    {
+                                        <a href="/books/delete/@book.Id" class="btn btn-danger">
+                                            <span class="oi oi-trash" /> @localizer["Delete"]
+                                        </a>
+                                    }
+                                    else
+                                    {
+
+                                        <span class="btn btn-secondary">
+                                            <span class="oi oi-trash" />  @localizer["Delete"]
+                                        </span>
+                                    }
+
+
                                 </AuthorizeView>
                             </td>
                         </tr>

@@ -21,14 +21,14 @@ namespace BookStoreUI.WASM {
         public static async Task Main(string[] args) {
             var builder = WebAssemblyHostBuilder.CreateDefault(args);
             if (builder.HostEnvironment.IsDevelopment()) {
-                builder.Configuration.AddInMemoryCollection(GetDevConfiguration());
-                builder.Configuration.AddJsonFile("appSettings.json", true);
-                builder.Configuration.AddJsonFile($"appSettings.{builder.HostEnvironment.Environment}.json", true);
+                builder.Configuration.AddInMemoryCollection(GetProductionConfiguration());
+                /*builder.Configuration.AddJsonFile("appSettings.json");
+                builder.Configuration.AddJsonFile($"appSettings.{builder.HostEnvironment.Environment}.json", true);*/
             }
             else {
                 builder.Configuration.AddInMemoryCollection(GetProductionConfiguration());
-                builder.Configuration.AddJsonFile("appSettings.json", true);
-                builder.Configuration.AddJsonFile($"appSettings.{builder.HostEnvironment.Environment}.json", true);
+                /*builder.Configuration.AddJsonFile("appSettings.json");
+                builder.Configuration.AddJsonFile($"appSettings.{builder.HostEnvironment.Environment}.json", true);*/
             }
             builder.Configuration.Build();
             builder.RootComponents.Add<App>("#app");
@@ -53,13 +53,13 @@ namespace BookStoreUI.WASM {
                 ;
             builder.Services.AddAuthorizationCore(options => {
                 options.AddPolicy("elementsCreation", policy => {
-                    policy.RequireRole("Administrator");
+                    policy.RequireAuthenticatedUser();
                 });
                 options.AddPolicy("elementsEdition", policy => {
-                    policy.RequireRole("Administrator");
+                    policy.RequireAuthenticatedUser();
                 });
                 options.AddPolicy("elementsDeleting", policy => {
-                    policy.RequireRole("Administrator");
+                    policy.RequireAuthenticatedUser();
                 });
             });
 
@@ -70,7 +70,6 @@ namespace BookStoreUI.WASM {
         public static IDictionary<string, string> GetDevConfiguration() {
             Dictionary<string, string> config = new Dictionary<string, string> {
                 { Data.ConventionalUrls.BaseUrlConfigurationKey, "https://localhost:44317/" }
-
             };
             return config;
         }
