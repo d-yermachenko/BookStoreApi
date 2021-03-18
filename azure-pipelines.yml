@@ -32,3 +32,19 @@ steps:
   inputs:
     platform: '$(buildPlatform)'
     configuration: '$(buildConfiguration)'
+    runTestsInIsolation: true
+
+- task: AzureRmWebAppDeployment@4
+  inputs:
+    ConnectionType: 'AzureRM'
+    azureSubscription: 'Azure leave management application(6a7b0937-77ed-47c1-9cda-ecb4c8a04828)'
+    appType: 'webApp'
+    WebAppName: 'DyoBookStoreApi'
+    deployToSlotOrASE: true
+    ResourceGroupName: 'BookStoreApp'
+    SlotName: 'production'
+    packageForLinux: '$(System.DefaultWorkingDirectory)/**/*.zip'
+    enableCustomDeployment: true
+    DeploymentType: 'webDeploy'
+    RemoveAdditionalFilesFlag: true
+    AdditionalArguments: '-retryAttempts:2 -retryInterval:10000'
